@@ -70,6 +70,11 @@ export class HubUtility {
     return false;
   }
   private async _queryProjectByName(authContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
+    Logger.logTrace(ChangesetGenerationConfig.loggingCategory, `Attempting to get projects list`);
+    const projlist: any = await this.connectClient.getProject(authContext, {
+      $select: "*",
+    });
+
     const project: Project = await this.connectClient.getProject(authContext, {
       $select: "*",
       $filter: "Name+eq+'" + projectName + "'",
