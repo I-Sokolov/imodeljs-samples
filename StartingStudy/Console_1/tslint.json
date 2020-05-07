@@ -1,8 +1,17 @@
 {
-  "extends": "@bentley/build-tools/tslint.json",
-  "linterOptions": {
-    "exclude": [
-        "src/test/**/*.ts"
-    ]
-  }
+  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "skipLibCheck": true
+    },
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "lib",
+    "node_modules"
+  ]
 }

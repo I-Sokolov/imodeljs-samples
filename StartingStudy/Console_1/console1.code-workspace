@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "..\\..\\agent-app\\query-agent"
+		},
+		{
+			"path": "..\\..\\tools\\imodel-changeset-test-utility"
 		}
 	]
 }
