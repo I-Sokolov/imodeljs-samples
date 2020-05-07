@@ -5,3 +5,7 @@ import { Config } from "./Config";
 Logger.initializeToConsole();
 Logger.setLevel(Config.loggingCategory, LogLevel.Trace);
 Logger.logTrace(Config.loggingCategory, "Logger initialized...");
+
+Config.startup ();
+
+Config.shutdown();
