@@ -19,16 +19,16 @@ export class ChangesetGenerationConfig {
       // the developer registration procedure here - https://git.io/fx8YP.
       // Note: These can be set in the environment also - e.g., "set ims_agent_client_id=agent_test_client"
       // -----------------------------------------------------------------------------------------------------------
-      // imjs_agent_client_id: "Set this to client id",
-      // imjs_agent_client_secret: "Set this to the client secret",
+      imjs_agent_client_id: "service-3gCb5lDykM5MdfbUkRVVHC6IQ",
+      imjs_agent_client_secret: "JvSTYIBwMJBZ8NPO/cLfjVrnizH/+Iz7H7OgTI6abPqp4rZn1GujJByUvFrL56pan7yMNEQRkNyZ4thAsh+F0Q==",
 
       // -----------------------------------------------------------------------------------------------------------
       // Test project and iModel (REQUIRED)
       // developer registration procedure here - https://git.io/fx8YP
       // Note: These can be set in the environment also - e.g., "set imjs_agent_project_name=MyProject"
       // -----------------------------------------------------------------------------------------------------------
-      // imjs_agent_project_name: "Set this to the name of the sample project",
-      // imjs_agent_imodel_name: "Set this to the name of the sample iModel",
+      imjs_agent_project_name: "cb1ea8cf-2276-40cb-a225-24f40d5a16b6",
+      imjs_agent_imodel_name: "Test1",
 
       // -----------------------------------------------------------------------------------------------------------
       // Other application settings (NOT REQUIRED)
