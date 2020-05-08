@@ -25,9 +25,21 @@ export class MyApp
     // Log in
     Logger.logTrace(Config.loggingCategory, `Attempting to login to OIDC for ${MyApp.clientConfig.clientId}`);
     const client = new OidcAgentClient(MyApp.clientConfig);
-    const jwt: AccessToken = await client.getToken(actx);
+    const accessToken: AccessToken = await client.getToken(actx);
     Logger.logTrace(Config.loggingCategory, `Successful login`);
 
+    const authCtx = new AuthorizedClientRequestContext(accessToken!);
+    const connectClient = new ConnectClient();
+
+    //get project
+    try 
+    {
+      const project = await connectClient.getProject(authCtx, {$select: "*", });      
+    } 
+    catch (error) 
+    {
+      Logger.logError (Config.loggingCategory, error);
+    }
 
     Config.shutdown();
   }
@@ -39,8 +51,8 @@ Logger.setLevel(Config.loggingCategory, LogLevel.Trace);
 Logger.logTrace(Config.loggingCategory, "Logger initialized...");
 
 if (require.main === module) {
-  Logger.logTrace(Config.loggingCategory, "Step in main");
+  // Logger.logTrace(Config.loggingCategory, "Step in main");
   // tslint:disable-next-line:no-floating-promises
   MyApp.main();
-  Logger.logTrace(Config.loggingCategory, "back from main");
+  // Logger.logTrace(Config.loggingCategory, "back from main");
 }
