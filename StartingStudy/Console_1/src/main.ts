@@ -13,7 +13,7 @@ import { Config } from "./Config";
   private static get clientConfig (): bkclient.OidcAgentClientConfiguration {
         return {
           clientId: process.IMODELJS_USER,
-          clientSecret: "Nnygx40qY35BaWJZFstuwmeoDC8Up4NLM2hOAdlvrl9KzGT8MS+MOnYO80YCkX5XZqzuQFhVx9rJ94a84eaDjQ==",
+          clientSecret: "",
           scope: "urlps-third-party context-registry-service:read-only imodelhub",
         };
     }
