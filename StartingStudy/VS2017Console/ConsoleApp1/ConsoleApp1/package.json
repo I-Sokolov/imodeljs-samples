@@ -1,0 +1,23 @@
+{
+  "name": "console-app1",
+  "version": "0.0.0",
+  "description": "ConsoleApp1",
+  "main": "app.js",
+  "author": {
+    "name": ""
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "*",
+    "@bentley/geometry-core": "*",
+    "@bentley/imodelhub-client": "*",
+    "@bentley/imodeljs-backend": "*",
+    "@bentley/imodeljs-clients": "*",
+    "@bentley/imodeljs-clients-backend": "*",
+    "@bentley/imodeljs-common": "*",
+    "@bentley/itwin-client": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.14",
+    "@bentley/build-tools": "*"
+  }
+}

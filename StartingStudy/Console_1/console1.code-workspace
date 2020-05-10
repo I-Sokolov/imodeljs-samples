@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "..\\..\\tools\\imodel-changeset-test-utility"
+		},
+		{
+			"path": "..\\VS2017Console\\ConsoleApp1\\ConsoleApp1"
 		}
 	]
 }

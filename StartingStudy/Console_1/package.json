@@ -15,19 +15,24 @@
     "cover": "npm run clean-output && nyc mocha --timeout 300000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts"
   },
   "dependencies": {
+    "@bentley/backend-itwin-client": "^2.0.0",
     "@bentley/bentleyjs-core": "*",
+    "@bentley/ecschema-metadata": "*",
+    "@bentley/frontend-authorization-client": "*",
     "@bentley/geometry-core": "*",
     "@bentley/imodelhub-client": "*",
     "@bentley/imodeljs-backend": "*",
-    "@bentley/imodeljs-clients": "*",
-    "@bentley/imodeljs-clients-backend": "*",
+    "@bentley/imodeljs-clients": "^2.0.0-globe-test.0",
+    "@bentley/imodeljs-clients-backend": "^2.0.0-globe-test.0",
     "@bentley/imodeljs-common": "*",
     "@bentley/itwin-client": "*"
   },
   "devDependencies": {
     "@bentley/build-tools": "*",
-    "typescript": "*",
-    "tslint": "*"
+    "tslint": "*",
+    "tsutil": "*",
+    "typedoc": "*",
+    "typescript": "*"
   },
   "nyc": {
     "include": [

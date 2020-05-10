@@ -20,7 +20,7 @@ export class ListModels {
                                                                           $select: "*", 
                                                                           /*$filter: "Name+eq+'" + projectName + "'",*/
                                                                           });     
-                                                                                 
+
         //projects.forEach(this.ProcessProject, this); - does not wait end of call
        for (const project of projects){
            await this.ProcessProject (project);
@@ -42,7 +42,6 @@ export class ListModels {
     ///////////////////////////////////////////////////////////////////////
     private /*async*/ ProcessModel (model : HubIModel){
         Logger.logTrace (Config.loggingCategory, `      Model ${model.name}     id: ${model.id}`);
-        //this._iModelDb = await this._iModelDbHandler.openLatestIModelDb(authCtx, this._projectId!, this._iModelId!);
     }
 
 }
