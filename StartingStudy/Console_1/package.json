@@ -3,6 +3,7 @@
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc 1>&2",
+    "watch": "tsc --watch 1>&2",
     "watchA": "supervisor --watch src--extensions .ts --no-restart-on exit --exec npm -- run build",
     "watchB": "onchange 'src/*.ts' -- npm run build",
     "clean": "rimraf lib tsconfig.tsbuildinfo .rush",
