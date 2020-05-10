@@ -1,7 +1,10 @@
 import * as path from "path";
 
-import { Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+
 import { IModelHost, IModelHostConfiguration, IModelDb } from "@bentley/imodeljs-backend";
+import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext, ConnectClient, HubIModel, IModelHubClient, Project } from "@bentley/imodeljs-clients";
+import { OidcAgentClient } from "@bentley/imodeljs-clients-backend";
 
 export class Config {
 
@@ -32,5 +35,25 @@ export class Config {
   public static shutdown(){
     IModelHost.shutdown ();
     Logger.logTrace(Config.loggingCategory, "iModelHost stopped");
+  }
+
+  public static async login() : Promise<AuthorizedClientRequestContext> {
+
+    const clientConfig = {
+      clientId: process.env.iModeljsAgentId!,
+      clientSecret: process.env.iModeljsAgentSecret!,
+      scope: "urlps-third-party context-registry-service:read-only imodelhub",
+    };
+  
+    Logger.logTrace(Config.loggingCategory, `Attempting to login to OIDC for ${clientConfig.clientId}`);
+    
+    const client = new OidcAgentClient(clientConfig);
+    const actx = new ClientRequestContext("");
+    const accessToken: AccessToken = await client.getToken(actx);
+    Logger.logTrace(Config.loggingCategory, `Successful login`);
+
+    let authCtx = new AuthorizedClientRequestContext(accessToken!);
+
+    return authCtx;
   }
 }
