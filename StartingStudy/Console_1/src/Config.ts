@@ -10,6 +10,10 @@ import * as bkitwcli from "@bentley/backend-itwin-client";
 
 export class Config {
 
+  public static get UseQAEnv () : boolean {
+    return false;
+  }
+
   public static get loggingCategory(): string {
     return "Console_1";
   }
@@ -20,11 +24,17 @@ export class Config {
     // Here is an example of how the briefcasesCacheDir property of the host configuration
     // could be set from an environment variable, which could be set by a cloud deployment mechanism.
 
+    if (Config.UseQAEnv) {
+      process.env.imjs_buddi_resolve_url_using_region="102";
+      Logger.logTrace(Config.loggingCategory, "Use QA env");
+    }
+
     let briefcaseCacheDir = process.env.MY_SERVICE_BRIEFCASES_DIR;
     if (briefcaseCacheDir === undefined) {
       const tempDir = process.env.MY_SERVICE_TMP_DIR || process.env.TEMP || "c:\\temp";
       briefcaseCacheDir = path.join(tempDir, "iModelJs_cache");
     }
+    Logger.logTrace(Config.loggingCategory, "Briefcase cache dir: " + briefcaseCacheDir);
 
     const imHostConfig = new IModelHostConfiguration();
     imHostConfig.briefcaseCacheDir = briefcaseCacheDir;
@@ -40,10 +50,19 @@ export class Config {
   }
 
   private static get clientConfig () { 
-    return {
-      clientId: process.env.iModeljsAgentId!,
-      clientSecret: process.env.iModeljsAgentSecret!,
-      scope: "urlps-third-party context-registry-service:read-only imodelhub",
+    if (Config.UseQAEnv) {
+      return {
+        clientId: process.env.iModeljsAgentId_QA!,
+        clientSecret: process.env.iModeljsAgentSecret_QA!,
+        scope: "urlps-third-party context-registry-service:read-only imodelhub",
+      }
+    }   
+    else {
+      return {
+        clientId: process.env.iModeljsAgentId!,
+        clientSecret: process.env.iModeljsAgentSecret!,
+        scope: "urlps-third-party context-registry-service:read-only imodelhub",
+      }
     }
   };
 

@@ -25,6 +25,8 @@ export class ListModels {
        for (const project of projects){
            await this.ProcessProject (project);
        }
+
+       Logger.logTrace (Config.loggingCategory, "Finish projects");
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -37,6 +39,8 @@ export class ListModels {
         const imodels:HubIModel[] = await hubClient.iModels.get (this.authCtx, project.wsgId/*, new IModelQuery().byName("iModelName")*/);
    
         imodels.forEach(this.ProcessModel, this);
+
+        Logger.logTrace (Config.loggingCategory, "  Finish models");
     }
 
     ///////////////////////////////////////////////////////////////////////
