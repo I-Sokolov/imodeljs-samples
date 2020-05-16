@@ -11,7 +11,7 @@ import * as bkitwcli from "@bentley/backend-itwin-client";
 export class Config {
 
   public static get UseQAEnv () : boolean {
-    return false;
+    return true;
   }
 
   public static get loggingCategory(): string {

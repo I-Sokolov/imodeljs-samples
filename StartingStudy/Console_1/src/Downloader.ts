@@ -1,11 +1,9 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import * as bk from "@bentley/imodeljs-backend";
 import * as cmn from "@bentley/imodeljs-common"
-import * as itwcli from "@bentley/itwin-client"
 
 import { Config } from "./Config";
-import { NativeAppBackend } from "@bentley/imodeljs-backend";
-
+import { PrintModelInfo } from "./ModelInfo";
 
 export class Downloader{
 
@@ -23,8 +21,10 @@ export class Downloader{
         Logger.logTrace (Config.loggingCategory, "Downloaded briefcase " + bcprops.key);
 
         const imodeldb : bk.BriefcaseDb = await bk.BriefcaseDb.open (authCtx, bcprops.key);
+        PrintModelInfo (imodeldb);
 
         const snapshot : bk.SnapshotDb = bk.SnapshotDb.createFrom (imodeldb, filePath);
+        PrintModelInfo (snapshot);
         
         snapshot.saveChanges ();
         snapshot.close ();
@@ -33,7 +33,7 @@ export class Downloader{
 
         imodeldb.close ();
 
-        bk.BriefcaseManager.delete (authCtx, bcprops.key);
+        //bk.BriefcaseManager.delete (authCtx, bcprops.key);
     }
 
 

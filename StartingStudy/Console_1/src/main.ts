@@ -7,6 +7,7 @@ import { OidcAgentClient } from "@bentley/imodeljs-clients-backend";
 import { Config } from "./Config";
 import {Downloader } from "./Downloader";
 import { ListModels } from "./ListModels";
+import { Modify } from "./Modify"
 
     
  ///////////////////////////////////////////////////////////////////////
@@ -17,13 +18,26 @@ import { ListModels } from "./ListModels";
       // Log in
       let authCtx = await Config.login ();
       
+      /*
       //list projects and models
       let list = new ListModels (authCtx);
       await list.Print ();
-
+*/
+/*
       //Download model
       let downloader = new Downloader ();
-      await downloader.Download ('O:\\DevArea\\BridgeIFC\\out_2\\down.bim', '39598190-6072-408b-a1e0-95a8cee4f761', '5c9875e4-4ac4-430c-bbb7-2bf4697701fc');
+      if (Config.UseQAEnv){
+        await downloader.Download ('O:\\DevArea\\BridgeIFC\\out_2\\down.bim', '15e988af-57c2-44f8-a9fb-c1ad46c878f1', '95cfefde-badb-4476-9ee2-fff53a8f35be');
+      }
+      else {
+        await downloader.Download ('O:\\DevArea\\BridgeIFC\\out_2\\down.bim', '39598190-6072-408b-a1e0-95a8cee4f761', '5c9875e4-4ac4-430c-bbb7-2bf4697701fc');
+      }
+*/
+
+      const modify = new Modify ();
+      if (Config.UseQAEnv){
+        await modify.DeleteAllPhysical ('15e988af-57c2-44f8-a9fb-c1ad46c878f1', '95cfefde-badb-4476-9ee2-fff53a8f35be');
+      }
 
       Config.shutdown();
     }
