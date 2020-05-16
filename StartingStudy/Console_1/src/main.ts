@@ -23,21 +23,21 @@ import { Modify } from "./Modify"
       let list = new ListModels (authCtx);
       await list.Print ();
 */
+      let projId = '15e988af-57c2-44f8-a9fb-c1ad46c878f1';
+      let modelId = '95cfefde-badb-4476-9ee2-fff53a8f35be'
+      if (!Config.UseQAEnv) {
+        projId = '39598190-6072-408b-a1e0-95a8cee4f761';
+        modelId = '5c9875e4-4ac4-430c-bbb7-2bf4697701fc';
+      }
 /*
       //Download model
       let downloader = new Downloader ();
-      if (Config.UseQAEnv){
-        await downloader.Download ('O:\\DevArea\\BridgeIFC\\out_2\\down.bim', '15e988af-57c2-44f8-a9fb-c1ad46c878f1', '95cfefde-badb-4476-9ee2-fff53a8f35be');
-      }
-      else {
-        await downloader.Download ('O:\\DevArea\\BridgeIFC\\out_2\\down.bim', '39598190-6072-408b-a1e0-95a8cee4f761', '5c9875e4-4ac4-430c-bbb7-2bf4697701fc');
-      }
+      await downloader.Download ('O:\\DevArea\\BridgeIFC\\out_2\\down.bim', projId, modelId);
 */
 
       const modify = new Modify ();
-      if (Config.UseQAEnv){
-        await modify.DeleteAllPhysical ('15e988af-57c2-44f8-a9fb-c1ad46c878f1', '95cfefde-badb-4476-9ee2-fff53a8f35be');
-      }
+      //await modify.DeleteAllPhysical (projId, modelId);
+      await modify.CreateCircles (projId, modelId);
 
       Config.shutdown();
     }
