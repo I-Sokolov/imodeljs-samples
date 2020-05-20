@@ -104,7 +104,7 @@ export class Modify {
         throw `No one ${clsName} found`;
     }
 
-    private async CreateCircleElement (model: Id64String, cat: Id64String, name: string, location: gm.Point3d): Promise<Id64String> {
+    private CreateCircleElement (model: Id64String, cat: Id64String, name: string, location: gm.Point3d): Id64String {
 
             const geom = this.CreateCircle ();
 
@@ -146,7 +146,7 @@ export class Modify {
                 for (let y=0; y < 10; y++) {
                     const name = `at(${x},${y})`;
                     let pt = new gm.Point3d (10*x, 10*y, 0);
-                    const id = await this.CreateCircleElement (model, cat, name, pt);
+                    const id = this.CreateCircleElement (model, cat, name, pt);
                     range.extendPoint (pt);
                 }
             }
