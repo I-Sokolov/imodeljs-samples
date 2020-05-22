@@ -12,15 +12,16 @@ export class Modify {
     private _authCtx : itwcli.AuthorizedClientRequestContext | undefined = undefined;
     private get authCtx () : itwcli.AuthorizedClientRequestContext {return this._authCtx!;}
 
-    private bcprops : cmn.BriefcaseProps | undefined = undefined;
-    
-    private _imodeldb : bk.BriefcaseDb | undefined = undefined;
-    private get imodeldb () : bk.BriefcaseDb {return this._imodeldb!;}
+    private bcprops : cmn.BriefcaseProps | undefined = undefined;   
+    private briefcasedb : bk.BriefcaseDb | undefined = undefined;
+
+    private _imodeldb : bk.IModelDb | undefined = undefined;
+    private get imodeldb () : bk.IModelDb { return this._imodeldb!}
 
     constructor (){
     }
 
-    async OpenModel (projId : string, modelId : string) {
+    async OpenBriefcase (projId : string, modelId : string) {
         this._authCtx = await Config.loginITwin ();
         Logger.logTrace (Config.loggingCategory, `Opening from ${projId} model ${modelId}`);
         
@@ -29,35 +30,44 @@ export class Modify {
         Logger.logTrace (Config.loggingCategory, `Downloaded briefcase id=${this.bcprops.key}`);
 
         const opt : cmn.OpenBriefcaseOptions = {openAsReadOnly : false};
-        this._imodeldb = await bk.BriefcaseDb.open (this.authCtx, this.bcprops.key, opt);
-        Logger.logTrace (Config.loggingCategory, `iModel ${this.imodeldb.name} opened`);
+        this.briefcasedb = await bk.BriefcaseDb.open (this.authCtx, this.bcprops.key, opt);
+        Logger.logTrace (Config.loggingCategory, `iModel ${this.briefcasedb.name} opened`);
 
-        this.imodeldb.concurrencyControl.startBulkMode();
-
-        const concurencyPolicy = this.imodeldb.concurrencyControl.getPolicy ();
+        this.briefcasedb.concurrencyControl.startBulkMode();
+        const concurencyPolicy = this.briefcasedb.concurrencyControl.getPolicy ();
         Logger.logTrace (Config.loggingCategory, `Concurency policy ${concurencyPolicy}`);
             
+        this._imodeldb = this.briefcasedb;
        // PrintModelInfo (this._imodeldb);
     }
 
-    async CloseModel () {
-        this.imodeldb.close ();
+    async CloseBriefcase () {
+        this.briefcasedb!.close ();
         await bk.BriefcaseManager.delete (this.authCtx, this.bcprops!.key);
         await bk.BriefcaseManager.purgeCache (this.authCtx);
     }
 
-    private async PushModel (pushname : string) {
+    async PushBriefcase (pushname : string) {
+        try {
+            await this.briefcasedb!.concurrencyControl.request (this.authCtx);
 
-        await this.imodeldb.concurrencyControl.request (this.authCtx);
+            this.imodeldb.saveChanges ();
+            Logger.logTrace (Config.loggingCategory, "Changes saved");
 
-        this.imodeldb.saveChanges ();
-        Logger.logTrace (Config.loggingCategory, "Changes saved");
+            await this.briefcasedb!.pullAndMergeChanges (this.authCtx);
+            Logger.logTrace (Config.loggingCategory, "Model merged");
 
-        await this.imodeldb.pullAndMergeChanges (this.authCtx);
-        Logger.logTrace (Config.loggingCategory, "Model merged");
+            await this.briefcasedb!.pushChanges (this.authCtx, pushname);
+            Logger.logTrace (Config.loggingCategory, "Changes pushed");
+        }
+        catch (err) {
+            this.imodeldb.abandonChanges ();
+            Logger.logError (Config.loggingCategory, err);
+        }        
+    }
 
-        await this.imodeldb.pushChanges (this.authCtx, pushname);
-        Logger.logTrace (Config.loggingCategory, "Changes pushed");
+    SetModel (imodeldb : bk.IModelDb) {
+        this._imodeldb = imodeldb;
     }
 
     async DeleteAllGeometric () {
@@ -77,12 +87,10 @@ export class Modify {
                 //break;
             }
             Logger.logTrace (Config.loggingCategory, "All elements are deleted");
-
-            await this.PushModel ("All deleted");
         }
         catch (err) {
-            this.imodeldb.abandonChanges ();
             Logger.logError (Config.loggingCategory, err);
+            this.imodeldb.abandonChanges ();
         }        
     }
 
@@ -134,9 +142,10 @@ export class Modify {
     }
 
     async CreateCircles () {
-        Logger.logTrace (Config.loggingCategory, `Create circles in ${this.imodeldb.name}`);
 
         try {
+            Logger.logTrace (Config.loggingCategory, `Create circles in ${this.imodeldb.name}`);
+
             const model = this.FindFirst ("bis.PhysicalModel");
             const cat = this.FindFirst ("bis.Category");
 
@@ -154,12 +163,10 @@ export class Modify {
             this.imodeldb.updateProjectExtents (range);
 
             Logger.logTrace (Config.loggingCategory, "All clircles are inserted");
-
-            await this.PushModel ("Create circles");
         }
         catch (err) {
-            this.imodeldb.abandonChanges ();
             Logger.logError (Config.loggingCategory, err);
+            this.imodeldb.abandonChanges ();
         }
     }
 

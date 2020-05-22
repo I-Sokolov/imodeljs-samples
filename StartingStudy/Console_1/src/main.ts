@@ -8,7 +8,7 @@ import { Config } from "./Config";
 import {Downloader } from "./Downloader";
 import { ListModels } from "./ListModels";
 import { Modify } from "./Modify"
-
+import { LocalBim } from "./LocalBim"
     
  ///////////////////////////////////////////////////////////////////////
   async function main(){
@@ -32,12 +32,16 @@ import { Modify } from "./Modify"
       let downloader = new Downloader ();
       await downloader.Download ('O:\\DevArea\\BridgeIFC\\out_2\\down.bim', projId, modelId);
 */
-
+/*
       const modify = new Modify ();
-      await modify.OpenModel (projId, modelId);
+      await modify.OpenBriefcase (projId, modelId);
       //await modify.DeleteAllGeometric ();
       await modify.CreateCircles ();
-      await modify.CloseModel ();
+      await modify.PushBriefcase ("changhes");
+      await modify.CloseBriefcase ();
+*/
+      const local = new LocalBim ();
+      local.CreateNew ("o:\\DevArea\\BridgeIfc\\out\\A.bim", "o:\\DevArea\\BridgeIfc\\out\\test.bim");
 
       Config.shutdown();
     }
