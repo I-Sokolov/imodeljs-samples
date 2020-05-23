@@ -12,5 +12,10 @@
 		{
 			"path": "..\\VS2017Console\\ConsoleApp1\\ConsoleApp1"
 		}
-	]
+	],
+	"settings": {
+		"editor.tabSize": 2,
+		"editor.formatOnPaste": true,
+		"editor.formatOnType": true
+	}
 }

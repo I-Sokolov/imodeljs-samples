@@ -8,7 +8,7 @@ function MakeQuery (imodel: bk.IModelDb, query:string) {
   try {
     const stmt : bk.ECSqlStatement = imodel.prepareStatement (query);
     let first : boolean = true;
-
+    
     while (stmt.step() === cmn.DbResult.BE_SQLITE_ROW) {
         const row: any = stmt.getRow();
         //Logger.logTrace (Config.loggingCategory, "count request, row as string: " + JSON.stringify(row));

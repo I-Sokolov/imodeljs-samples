@@ -5,10 +5,11 @@ import * as cmn from "@bentley/imodeljs-common"
 import { Config } from "./Config";
 import {Modify} from "./Modify"
 import { PrintModelInfo } from "./ModelInfo";
+import {ClassificationSystems } from "./ClassificationSystems/ClassificationSystems"
 
 export class LocalBim {
     
-    CreateNew (filePath : string, seedFile? :  string) {
+    static CreateNew (filePath : string, seedFile? :  string) {
         /*
                 const root : cmn.RootSubjectProps = {
                     name : "MyRoot",
@@ -41,6 +42,19 @@ export class LocalBim {
         }
         catch (err){
             Logger.logError (Config.loggingCategory, err);
+        }
+    }
+
+    public static TestClassifications (): void {
+        try {
+            const srcModelFile = 'o:\\DevArea\\BridgeIFC\\out\\test.bim';
+            const srcModel = bk.SnapshotDb.openFile(srcModelFile);            
+
+            const clsf = new ClassificationSystems(srcModel, Config.loggingCategory);
+            clsf.LogInfo();
+        }
+        catch (err) {
+            Logger.logError(Config.loggingCategory, err);
         }
     }
 }

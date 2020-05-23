@@ -40,8 +40,9 @@ import { LocalBim } from "./LocalBim"
       await modify.PushBriefcase ("changhes");
       await modify.CloseBriefcase ();
 */
-      const local = new LocalBim ();
-      local.CreateNew ("o:\\DevArea\\BridgeIfc\\out\\A.bim", "o:\\DevArea\\BridgeIfc\\out\\test.bim");
+      
+      //LocalBim.CreateNew ("o:\\DevArea\\BridgeIfc\\out\\A.bim", "o:\\DevArea\\BridgeIfc\\out\\test.bim");
+      LocalBim.TestClassifications();
 
       Config.shutdown();
     }
