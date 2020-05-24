@@ -51,6 +51,7 @@ export class Repository {
       this.theApp.Trace(`Parsing ${this.filePath}`);
       const str: string = fs.readFileSync(this.filePath, "utf8");
       const parser = new xml.Parser();
+      
       parser.parseString(str, (err:any, xml:any)=>this.OnXMLParsed(err,xml));
     }
     catch (err) {
@@ -81,11 +82,11 @@ export class System {
   private theApp: TheApp;
 
   /** */
-  private name: string;
-  private editionVersion: string;
-  private editionDate: Date;
-  private description: string;
-  private source: string;
+  private name: string | undefined;
+  private editionVersion: string | undefined;
+  private editionDate: Date | undefined;
+  private description: string | undefined;
+  private source: string | undefined;
 
   /** */
   private items: Array<Item>;
@@ -94,22 +95,39 @@ export class System {
   constructor(theApp: TheApp, xmlNode: any) {
     this.theApp = theApp;
 
-    this.name = xmlNode.Name;
-    this.editionVersion = xmlNode.editionVersion;
-    this.editionDate = new Date();
-    this.editionDate.setFullYear(xmlNode.editionDate.Year);
-    this.editionDate.setMonth(xmlNode.editionDate.setMonth);
-    this.editionDate.setDate(xmlNode.editionDate.Day);
-    this.description = xmlNode.description;
-    this.source = xmlNode.source;
+    if (xmlNode.Name)
+      for (this.name of xmlNode.Name);
+    if (xmlNode.EditionVersion)
+      for (this.editionVersion of xmlNode.EditionVersion);
+    if (xmlNode.EditionDate) {
+      for (const date of xmlNode.EditionDate) {
+        this.editionDate = new Date();
+        if (date.Year)
+          for (const val of date.Year)
+            this.editionDate.setFullYear(val);
+        if (date.Month)
+          for (const val of date.Month)
+            this.editionDate.setMonth(val);
+        if (date.Day)
+          for (const val of date.Day)
+            this.editionDate.setDate(val);
+      }
+    }
+    if (xmlNode.Description)
+      for (this.description of xmlNode.Description);
+    if (xmlNode.Source)
+      for (this.source of xmlNode.Source);
 
     this.items = new Array<Item>();
-    for (const xmlItem of xmlNode.items) {
-      const item = new Item(theApp, xmlItem);
-      this.items.push(item);
-    }
+    if (xmlNode.Items)
+      for (const xmlItems of xmlNode.Items) {
+        if (xmlItems.Item)
+          for (const xmlItem of xmlItems.Item) {
+            const item = new Item(theApp, this, xmlItem);
+            this.items.push(item);
+          }
+      }
   }
-
 }
 
 /** Access to classification system in repository */
@@ -118,26 +136,34 @@ export class Item {
   private theApp: TheApp;
 
   /** */
-  private id: string;
-  private name: string;
-  private description: string;
+  private id: string | undefined;
+  private name: string | undefined;
+  private description: string | undefined;
 
   /** */
+  private parent: Item | System;
   private children: Array<Item>;
 
   /** */
-  constructor(theApp: TheApp, xmlNode: any) {
+  constructor(theApp: TheApp, parent: Item | System, xmlNode: any) {
     this.theApp = theApp;
 
-    this.id = xmlNode.id;
-    this.name = xmlNode.name;
-    this.description = xmlNode.description;
+    this.parent = parent;
+
+    if (xmlNode.ID)
+      for (this.id of xmlNode.ID);
+    if (xmlNode.Name)
+      for (this.name of xmlNode.Name);
+    if (xmlNode.Description)
+      for (this.description of xmlNode.Description);
 
     this.children = new Array<Item>();
-    for (const xmlItem of xmlNode.items) {
-      const item = new Item(theApp, xmlItem);
-      this.children.push(item);
-    }
-
+    if (xmlNode.Children)
+      for (const xmlChild of xmlNode.Children)
+        if (xmlChild.Item)
+          for (const xmlItem of xmlChild.Item) {
+            const item = new Item(theApp, this, xmlItem);
+            this.children.push(item);
+          }
   }
 }
