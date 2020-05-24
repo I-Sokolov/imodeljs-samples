@@ -38,7 +38,7 @@ export class Repositories {
     const files = fs.readdirSync(repoPath);
 
     for (const file of files) {
-      this.theApp.Trace(file);
+      this.theApp.Trace(`Found ${file}`);
       const filePath = path.join(repoPath, file);
       const repo = new Repository(this.theApp, filePath);
       this.repositories.push(repo);
