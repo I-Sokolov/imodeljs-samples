@@ -26,7 +26,22 @@ function MakeQuery (imodel: bk.IModelDb, query:string) {
         let print = " ";
         for (let i = 0; i < stmt.getColumnCount(); i++) {
           const val = stmt.getValue(i);
-          print += val.getString () + "\t";
+          if (val.isNull) {
+            print += "null\t";
+          }
+          else {
+            const type: cmn.ECSqlValueType = val.columnInfo.getType();
+            switch (type) {
+              case cmn.ECSqlValueType.Navigation:
+                const n = val.getNavigation();
+                const str = n.id;
+                print += str + "\t";
+                break;
+              default:
+                //console.log(type);
+                print += val.getString() + "\t";
+            }
+          }
         }
         console.log (print);
 
@@ -51,8 +66,8 @@ export function PrintModelInfo (imodel : bk.IModelDb) {
     Logger.logTrace (Config.loggingCategory, "============== Schemas: ");
     MakeQuery (imodel, "SELECT Name, Alias, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef ORDER BY Name");
 
-    Logger.logTrace (Config.loggingCategory, "============== BisCore classes: ");
-    MakeQuery (imodel, "SELECT cls.Name, cls.Modifier FROM meta.ECSchemaDef sch JOIN meta.ECClassDef cls ON cls.Schema.id=sch.ECInstanceId WHERE sch.Name='BisCore' ORDER BY cls.Name");
+   // Logger.logTrace (Config.loggingCategory, "============== BisCore classes: ");
+   // MakeQuery (imodel, "SELECT cls.Name, cls.Modifier FROM meta.ECSchemaDef sch JOIN meta.ECClassDef cls ON cls.Schema.id=sch.ECInstanceId WHERE sch.Name='BisCore' ORDER BY cls.Name");
 
    // Logger.logTrace (Config.loggingCategory, "============== All classes by schema: ");
    //MakeQuery (imodel, "SELECT sch.Name, cls.Name, cls.Modifier FROM meta.ECSchemaDef sch JOIN meta.ECClassDef cls ON cls.Schema.id=sch.ECInstanceId ORDER BY sch.Name, cls.Name");

@@ -8,9 +8,9 @@ import * as bk from "@bentley/imodeljs-backend";
 import * as cmn from "@bentley/imodeljs-common"
 
 /** Internal utilities
- * @private
- */
-export class Utils {
+* @private
+*/
+export class TheApp {
   /**  */
   public loggerCategory: string = "Classification Systems Utility";
 
@@ -51,7 +51,22 @@ export class Utils {
         let print = " ";
         for (let i = 0; i < stmt.getColumnCount(); i++) {
           const val = stmt.getValue(i);
-          print += val.getString() + "\t";
+          if (val.isNull) {
+            print += "null\t";
+          }
+          else {
+            const type: cmn.ECSqlValueType = val.columnInfo.getType();
+            switch (type) {
+              case cmn.ECSqlValueType.Navigation:
+                const n = val.getNavigation();
+                const str = n.id;
+                print += str + "\t";
+                break;
+              default:
+                //console.log(type);
+                print += val.getString() + "\t";
+            }
+          }
         }
         this.Trace(print);
 

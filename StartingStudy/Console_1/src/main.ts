@@ -22,16 +22,16 @@ import { LocalBim } from "./LocalBim"
       await list.Print ();
 */
       let projId = '15e988af-57c2-44f8-a9fb-c1ad46c878f1';
-      let modelId = '0f175298-e17f-4897-b117-5de6ef8ca670'
+      let modelId = '545b48ad-4a62-42a8-bc00-306910977a60'
       if (!Config.UseQAEnv) {
         projId = '39598190-6072-408b-a1e0-95a8cee4f761';
         modelId = '5c9875e4-4ac4-430c-bbb7-2bf4697701fc';
       }
-/*
+
       //Download model
-      let downloader = new Downloader ();
-      await downloader.Download ('O:\\DevArea\\BridgeIFC\\out_2\\down.bim', projId, modelId);
-*/
+      //let downloader = new Downloader ();
+      //await downloader.Download('o:\\DevArea\\BridgeIFC\\out\\test.bim', projId, modelId);
+
 /*
       const modify = new Modify ();
       await modify.OpenBriefcase (projId, modelId);

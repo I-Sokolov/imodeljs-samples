@@ -5,7 +5,7 @@ import * as cmn from "@bentley/imodeljs-common"
 import { Config } from "./Config";
 import {Modify} from "./Modify"
 import { PrintModelInfo } from "./ModelInfo";
-import {ClassificationSystems } from "./ClassificationSystems/ClassificationSystems"
+import { Classifications } from "./Classifications/Classifications"
 
 export class LocalBim {
     
@@ -45,13 +45,30 @@ export class LocalBim {
         }
     }
 
-    public static TestClassifications (): void {
+    private static async ImportSchema(imodel : bk.IModelDb, schemaFile : string) {
+        const authCtx = await Config.loginITwin();
+        await imodel.importSchemas (authCtx, [schemaFile]);
+    }
+
+    public static TestClassifications () {
         try {
             const srcModelFile = 'o:\\DevArea\\BridgeIFC\\out\\test.bim';
-            const srcModel = bk.SnapshotDb.openFile(srcModelFile);            
+            const srcModel = bk.SnapshotDb.openFile(srcModelFile);       
+            
+            const dstModelFile = 'o:\\DevArea\\BridgeIFC\\out\\clsf.bim';
+            const dstModel = bk.SnapshotDb.createFrom(srcModel, dstModelFile);
 
-            const clsf = new ClassificationSystems(srcModel, Config.loggingCategory);
+            //PrintModelInfo(dstModel);
+            //await LocalBim.ImportSchema(dstModel, "O:\\DevArea\\BridgeIFC\\out\\schema\\ClassificationSystems.01.00.00.ecschema.xml");
+            //PrintModelInfo(dstModel);
+
+            const clsf = new Classifications(dstModel, Config.loggingCategory);
             clsf.LogInfo();
+            clsf.UpdateAll();
+
+            dstModel.saveChanges();
+            dstModel.close();
+            srcModel.close();
         }
         catch (err) {
             Logger.logError(Config.loggingCategory, err);

@@ -25,7 +25,8 @@
     "@bentley/imodeljs-clients": "^2.0.0-globe-test.0",
     "@bentley/imodeljs-clients-backend": "^2.0.0-globe-test.0",
     "@bentley/imodeljs-common": "*",
-    "@bentley/itwin-client": "*"
+    "@bentley/itwin-client": "*",
+    "fs": "0.0.1-security"
   },
   "devDependencies": {
     "@bentley/build-tools": "*",
