@@ -58,6 +58,8 @@ export class LocalBim {
             const dstModelFile = 'o:\\DevArea\\BridgeIFC\\out\\clsf.bim';
             const dstModel = bk.SnapshotDb.createFrom(srcModel, dstModelFile);
 
+            srcModel.close();
+
             //PrintModelInfo(dstModel);
             //await LocalBim.ImportSchema(dstModel, "O:\\DevArea\\BridgeIFC\\out\\schema\\ClassificationSystems.01.00.00.ecschema.xml");
             //PrintModelInfo(dstModel);
@@ -68,7 +70,6 @@ export class LocalBim {
 
             dstModel.saveChanges();
             dstModel.close();
-            srcModel.close();
         }
         catch (err) {
             Logger.logError(Config.loggingCategory, err);

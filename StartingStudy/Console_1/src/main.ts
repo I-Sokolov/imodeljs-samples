@@ -9,6 +9,8 @@ import {Downloader } from "./Downloader";
 import { ListModels } from "./ListModels";
 import { Modify } from "./Modify"
 import { LocalBim } from "./LocalBim"
+import { DownloadFailed } from "@bentley/itwin-client";
+import * as Graphisoft from "./Classifications/GetGraphisoftRepositories";
     
  ///////////////////////////////////////////////////////////////////////
   async function main(){
@@ -42,7 +44,10 @@ import { LocalBim } from "./LocalBim"
 */
       
       //LocalBim.CreateNew ("o:\\DevArea\\BridgeIfc\\out\\A.bim", "o:\\DevArea\\BridgeIfc\\out\\test.bim");
-      LocalBim.TestClassifications();
+      //LocalBim.TestClassifications();
+
+      const donwloader = new Graphisoft.Download();
+      await donwloader.Run();
 
       Config.shutdown();
     }

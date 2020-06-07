@@ -52,7 +52,7 @@ export class Classifications {
             this.theApp.Trace("Classifications");
             this.theApp.LogQueryResult(this.imodel, "SELECT ECInstanceId clsfId, Model.id modelId, UserLabel FROM clsf.Classification");
 
-            core.Logger.setLevel(this.theApp.loggerCategory, saveLevel ? saveLevel : core.LogLevel.None);
+            core.Logger.setLevel(this.theApp.loggerCategory, (saveLevel == undefined) ? core.LogLevel.None : saveLevel!);
         }
         catch (err) {
             core.Logger.logError(this.theApp.loggerCategory, err);
@@ -86,8 +86,8 @@ export class Classifications {
         try {
             this.theApp.Trace(`Updating ${code} ${idClsf} ${idModel}`);
 
-            let table: bk.Element | null = null;
-            let system: bk.Element | null = null;
+            let table: bk.Element | undefined = undefined;
+            let system: bk.Element | undefined = undefined;
 
             if (idModel) {
                 const modelTable = this.imodel.models.getModel(idModel);
@@ -100,7 +100,10 @@ export class Classifications {
                 }
             }
             
-            //const tableModel.modeledElement.id;
+            const systemName = system ? system.userLabel : undefined;
+            const tableName = table ? table.userLabel : undefined;
+
+            const root = this.repositories.FindRoot (systemName, tableName);
         }
         catch (err) {
             core.Logger.logError(this.theApp.loggerCategory, `Failed to update classificatoin ${idClsf} ${code}: ` + err);

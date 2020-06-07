@@ -26,8 +26,12 @@
     "@bentley/imodeljs-clients-backend": "^2.0.0-globe-test.0",
     "@bentley/imodeljs-common": "*",
     "@bentley/itwin-client": "*",
+    "@types/request": "^2.48.5",
+    "@types/request-promise-native": "^1.0.17",
     "@types/xml2js": "^0.4.5",
     "fs": "0.0.1-security",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.8",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {

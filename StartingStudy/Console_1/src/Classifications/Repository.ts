@@ -19,14 +19,14 @@ import { TheApp } from "./TheApp"
 */
 export class Repository {
   /** */
+  public systems: Array<System>;
+
+  /** */
   private theApp: TheApp;
 
   /** */
   private filePath: string;
   private parsed: boolean;
-
-  /** */
-  private systems: Array<System>;
 
   /**
    * constructor.
@@ -82,14 +82,14 @@ export class System {
   private theApp: TheApp;
 
   /** */
-  private name: string | undefined;
-  private editionVersion: string | undefined;
-  private editionDate: Date | undefined;
-  private description: string | undefined;
-  private source: string | undefined;
+  public name: string | undefined;
+  public editionVersion: string | undefined;
+  public editionDate: Date | undefined;
+  public description: string | undefined;
+  public source: string | undefined;
 
   /** */
-  private items: Array<Item>;
+  public items: Array<Item>;
 
   /** */
   constructor(theApp: TheApp, xmlNode: any) {
@@ -128,6 +128,16 @@ export class System {
           }
       }
   }
+
+  /** */
+  public FindTable(tableName: string): Item | undefined {
+    for (const item of this.items) {
+      if (item.ID == tableName) {
+        return item;
+      }
+    }
+    return undefined;  
+  }
 }
 
 /** Access to classification system in repository */
@@ -143,6 +153,10 @@ export class Item {
   /** */
   private parent: Item | System;
   private children: Array<Item>;
+
+  public get ID(): string | undefined {
+    return this.id;
+  }
 
   /** */
   constructor(theApp: TheApp, parent: Item | System, xmlNode: any) {
