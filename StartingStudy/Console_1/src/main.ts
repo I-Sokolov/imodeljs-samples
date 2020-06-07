@@ -44,10 +44,10 @@ import * as Graphisoft from "./Classifications/GetGraphisoftRepositories";
 */
       
       //LocalBim.CreateNew ("o:\\DevArea\\BridgeIfc\\out\\A.bim", "o:\\DevArea\\BridgeIfc\\out\\test.bim");
-      //LocalBim.TestClassifications();
+      LocalBim.TestClassifications();
 
-      const donwloader = new Graphisoft.Download();
-      await donwloader.Run();
+      //const donwloader = new Graphisoft.Download();
+      //await donwloader.Run();
 
       Config.shutdown();
     }

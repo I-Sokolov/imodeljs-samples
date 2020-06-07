@@ -12,6 +12,7 @@ import * as cmn from "@bentley/imodeljs-common"
 
 import { TheApp } from "./TheApp"
 import { Repositories } from "./Repositories";
+import { Item } from "./Repository";
 
 /** Helper class to work with classification systems
  * @public
@@ -73,7 +74,7 @@ export class Classifications {
                 const modelId: core.Id64String | null = row.modelId;
                 const code: string = row.code;
 
-                this.UpdateClassification(clsfId, modelId, code);
+                this.FindAndUpdateClassification(clsfId, modelId, code);
             }
         }
         catch (err) {
@@ -81,8 +82,8 @@ export class Classifications {
         }
     }
 
-    /** Update all classification systems data */
-    private UpdateClassification(idClsf: core.Id64String, idModel: core.Id64String | null, code: string) {
+    /**  */
+    private FindAndUpdateClassification(idClsf: core.Id64String, idModel: core.Id64String | null, code: string) {
         try {
             this.theApp.Trace(`Updating ${code} ${idClsf} ${idModel}`);
 
@@ -103,12 +104,21 @@ export class Classifications {
             const systemName = system ? system.userLabel : undefined;
             const tableName = table ? table.userLabel : undefined;
 
-            const root = this.repositories.FindRoot (systemName, tableName);
+            const item = this.repositories.FindItem(systemName, tableName, code);
+            if (item) {
+                this.UpdateClassification(idClsf, item);
+            }
+            else {
+                core.Logger.logWarning(this.theApp.loggerCategory, `Classification item not found: ${code}, system ${systemName}, ${tableName}`);
+            }
         }
         catch (err) {
             core.Logger.logError(this.theApp.loggerCategory, `Failed to update classificatoin ${idClsf} ${code}: ` + err);
-        }
+        }    
+    }
 
-    
+    /**  */
+    private UpdateClassification(idClsf: core.Id64String, item: Item) {
+        core.Logger.logTrace(this.theApp.loggerCategory, `Updating ${item.ID} on EC ${idClsf}`);
     }
 }

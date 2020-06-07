@@ -130,12 +130,29 @@ export class System {
   }
 
   /** */
-  public FindTable(tableName: string): Item | undefined {
+  public FindItem(itemCode: string): Item | undefined {
+
     for (const item of this.items) {
-      if (item.ID == tableName) {
-        return item;
+      const found = item.FindItem(itemCode);
+      if (found) {
+        return found;
       }
     }
+      
+    return undefined;
+  }
+
+  /** */
+  public FindTable(tableName: string): Item | undefined {
+
+    if (this.name && this.name.startsWith("omni")) {
+      for (const item of this.items) {
+        if (item.ID == tableName) {
+          return item;
+        }
+      }
+    }
+
     return undefined;  
   }
 }
@@ -146,13 +163,13 @@ export class Item {
   private theApp: TheApp;
 
   /** */
-  private id: string | undefined;
-  private name: string | undefined;
-  private description: string | undefined;
+  public id: string | undefined;
+  public name: string | undefined;
+  public description: string | undefined;
 
   /** */
-  private parent: Item | System;
-  private children: Array<Item>;
+  public parent: Item | System;
+  public children: Array<Item>;
 
   public get ID(): string | undefined {
     return this.id;
@@ -180,4 +197,22 @@ export class Item {
             this.children.push(item);
           }
   }
+
+  /** */
+  public FindItem(itemCode: string): Item | undefined {
+
+    if (this.ID == itemCode) {
+      return this;
+    }
+
+    for (const item of this.children) {
+      const found = item.FindItem(itemCode);
+      if (found) {
+        return found;
+      }
+    }
+
+    return undefined;
+  }
+
 }

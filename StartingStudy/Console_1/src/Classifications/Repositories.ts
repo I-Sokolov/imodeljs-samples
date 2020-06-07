@@ -14,6 +14,7 @@ import * as rp from "./Repository";
 * @private
 */
 export class Repositories {
+  
   /** */
   private theApp: TheApp;
 
@@ -30,40 +31,70 @@ export class Repositories {
     this.ReadRepositories();
   }
 
-
   /** */
-  public FindRoot (systemName: string | undefined, tableName: string | undefined): rp.System | rp.Item | undefined {
+  public FindItem(systemName: string | undefined, tableName: string | undefined, itemCode:string): rp.Item | undefined {
     
-    let scope: rp.System | rp.Item | undefined;
+    const root = this.FindRoot(systemName, tableName);
     
-    if (systemName) {
-      scope = this.FindScope(systemName);
+    if (root) { 
+      return root.FindItem(itemCode);
     }
 
-    if (tableName) {
-      const system = scope as rp.System;
-      if (system) {
-        let table = system.FindTable(tableName);
-        if (table)
-          scope = table;
-      }
-      else {
-        scope = this.FindScope(tableName);
+    //find in all systems
+    for (const repo of this.repositories) {
+      for (const system of repo.systems) {
+        const item = system.FindItem(itemCode);
+        if (item) {
+          return item;
+        }          
       }
     }
 
-    return scope;
+    return undefined;
   }
 
   /** */
-  private FindScope(name: string): rp.System | rp.Item | undefined {
-    //seacrh system
+  private FindRoot (systemName: string | undefined, tableName: string | undefined): rp.System | rp.Item | undefined {
+    
+    let system: rp.System  | undefined;
+    
+    if (systemName) {
+      system = this.FindSystem (systemName);
+    }
+
+    let table: rp.Item | undefined;
+    if (tableName) {
+      if (system) {
+        table = system.FindTable(tableName);
+      }
+      else {
+        table = this.FindTableInAllSystems(tableName);
+      }
+    }
+
+    if (table) {
+      return table;
+    }
+
+    return system;
+  }
+
+  /**  */
+  private FindSystem(name: string): rp.System | undefined {    
+    
     for (const repo of this.repositories) {
       for (const system of repo.systems) {
         if (system.name == name)
           return system;
       }
     }
+
+    //not found
+    return undefined;
+  }
+
+  /**  */
+  private FindTableInAllSystems(name: string): rp.Item | undefined {
 
     //search table
     for (const repo of this.repositories) {
