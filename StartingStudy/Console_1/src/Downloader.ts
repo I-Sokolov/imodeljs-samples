@@ -11,13 +11,18 @@ export class Downloader{
         Logger.logTrace (Config.loggingCategory, "Donloader is constructed");
     }
 
-    async Download (filePath: string, projId : string, modelId : string) {
-        Logger.logTrace (Config.loggingCategory, `Downloading to ${filePath} from ${projId} model ${modelId}`);
+    async Download (filePath: string, projId : string, modelId : string, namedVersion? : string) {
+        Logger.logTrace (Config.loggingCategory, `Downloading to ${filePath} from ${projId} model ${modelId} version ${namedVersion}`);
 
         const authCtx = await Config.loginITwin ();
+
+        let version: cmn.IModelVersion | undefined = undefined;
+        if (namedVersion) {
+            version = cmn.IModelVersion.named (namedVersion);
+        }
         
         const opts : cmn.DownloadBriefcaseOptions = { syncMode: cmn.SyncMode.PullOnly };
-        const bcprops : cmn.BriefcaseProps = await bk.BriefcaseManager.download (authCtx, projId, modelId, opts); 
+        const bcprops : cmn.BriefcaseProps = await bk.BriefcaseManager.download (authCtx, projId, modelId, opts, version); 
         Logger.logTrace (Config.loggingCategory, "Downloaded briefcase " + bcprops.key);
 
         const imodeldb : bk.BriefcaseDb = await bk.BriefcaseDb.open (authCtx, bcprops.key);
