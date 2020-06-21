@@ -10,12 +10,13 @@ import * as core from "@bentley/bentleyjs-core";
 import * as bk from "@bentley/imodeljs-backend";
 import * as cmn from "@bentley/imodeljs-common"
 
-import {Classification} from "./ec2ts/ClassificationSystemsElements"
-import { ClassificationProps} from "./ec2ts/ClassificationSystemsElementProps"
+import { Classification, ClassificationTable, ClassificationSystem} from "./ec2ts/ClassificationSystemsElements"
+import { ClassificationProps, ClassificationTableProps, ClassificationSystemProps } from "./ec2ts/ClassificationSystemsElementProps"
+import { ClassificationSystems} from "./ec2ts/ClassificationSystems"
 
 import { TheApp } from "./TheApp"
 import { Repositories } from "./Repositories";
-import { Item } from "./Repository";
+import { Item, Table, System } from "./Repository";
 import { EcefLocationProps } from "@bentley/imodeljs-common";
 
 /** Update classification
@@ -26,27 +27,149 @@ export class Updater {
   /**  */
   private theApp: TheApp;
   private imodel: bk.IModelDb;
-  private idClsf: core.Id64String;
-  private item: Item;
 
   /**
    * constructor.
    * @param imode The impdel to work with.
    */
-  public constructor(theApp: TheApp, imodel: bk.IModelDb, idClsf: core.Id64String, item: Item) {
+  public constructor(theApp: TheApp, imodel: bk.IModelDb) {
     this.theApp = theApp;
     this.imodel = imodel;
-    this.idClsf = idClsf;
-    this.item = item;
   }
 
   /** */
-  public Execute() {
-    core.Logger.logTrace(this.theApp.loggerCategory, `Updating ${this.item.ID} on EC ${this.idClsf}`);
+  public Update(idClsf: core.Id64String, repoItem: Item) {
+    core.Logger.logTrace(this.theApp.loggerCategory, `Updating ${repoItem.id} on EC ${idClsf}`);
   
-    const elem: Classification = this.imodel.elements.getElement(this.idClsf);
+    const existingItem: Classification = this.imodel.elements.getElement(idClsf);
 
-    core.Logger.logTrace(this.theApp.loggerCategory, `${elem.userLabel} and ${elem.description}`);
+    this.UpdateItemRecursive(existingItem, existingItem.model, repoItem);
   }
 
+  /**  */
+  public UpdateItemRecursive(existingItem: Classification|undefined, existingModel:core.Id64String, repoItem: Item): Classification {
+  
+    const repoTable = repoItem.parent as Table;
+    if (repoTable) {
+      const model = this.UpdateTable(existingModel, repoTable);
+      return this.UpdateItemDirect(existingItem, repoItem, model);
+    }
+
+    else {
+      const repoParent = repoItem.parent as Item;
+      
+      let existingParent: Classification | undefined = undefined;
+      if (existingItem) {
+        if (existingItem.parent) {
+          const parentId:core.Id64String = existingItem.parent.id;
+          if (parentId) {
+            const found: Classification = this.imodel.elements.getElement(parentId);
+            existingParent = found;
+          }
+        }
+      }
+
+      const newParent = this.UpdateItemRecursive(existingParent, existingModel, repoParent);
+
+      return this.UpdateItemDirect(existingItem, repoParent, newParent.model, newParent)
+    }
+  }
+
+  /** */
+  private UpdateItemDirect(existingItem: Classification | undefined, repoItem: Item, newModel: core.Id64String, parent?: Classification): Classification {
+    
+    if (existingItem && existingItem.model == newModel) {
+      existingItem.userLabel = repoItem.id;
+      existingItem.description = repoItem.name;
+      existingItem.parent = parent;
+      existingItem.update();
+      return existingItem;
+    }
+
+    const props: ClassificationProps = {
+      model: newModel,
+      code: cmn.Code.createEmpty(),
+      classFullName: Classification.classFullName,
+      //category: cat,
+      userLabel: repoItem.id
+    };
+
+    const id = this.imodel.elements.insertElement(props);
+
+    const newItem: Classification = this.imodel.elements.getElement(id);
+
+    return newItem;
+  }    
+
+  /** */
+  private UpdateTable(existingTableModelId: core.Id64String, repoTable: Table): core.Id64String {
+
+    const existingTableModel = this.imodel.models.getModel(existingTableModelId);
+    const existingTableElemId = existingTableModel.modeledElement.id;
+    const existingTableElem: ClassificationTable = this.imodel.elements.getElement(existingTableElemId);
+
+    const existingSystemId = existingTableElem.parent!.id;
+    const newSystemId = this.UpdateSystem(existingSystemId, repoTable.system);
+
+    if (newSystemId == existingSystemId && existingTableElem.userLabel == repoTable.id) {
+      existingTableElem.description = repoTable.description;
+      existingTableElem.update();
+      return existingTableModelId;
+    }
+
+    const props: ClassificationTableProps = {
+      model: existingTableElem.model,
+      code: cmn.Code.createEmpty(),
+      classFullName: ClassificationTable.classFullName,
+      //category: existingSystem.cate
+      userLabel: repoTable.id,
+      description:repoTable.description
+    };
+
+    const idNewTable = this.imodel.elements.insertElement(props);
+    const newTable: ClassificationTable = this.imodel.elements.getElement(idNewTable);
+
+    const relElem : cmn.RelatedElementProps = {     
+      id: newTable.id
+      //relClassName?: string;      
+    }
+
+    const modelProps: cmn.ModelProps = {
+      modeledElement: relElem,
+      classFullName: existingTableModel.classFullName
+    };
+
+    const newModel = this.imodel.models.createModel(modelProps);
+    const id = newModel.insert();
+    return id;
+  }
+
+  /** */
+  private UpdateSystem(existingSystemId: core.Id64String, repoSystem: System) : core.Id64String {
+    
+    const existingSystem: ClassificationSystem = this.imodel.elements.getElement(existingSystemId);
+
+    if (existingSystem.userLabel == repoSystem.name) {
+      existingSystem.edition = repoSystem.editionVersion;
+      existingSystem.location = repoSystem.source;
+      existingSystem.update();
+      return existingSystem.id;
+    }
+
+    const props : ClassificationSystemProps = {
+      model: existingSystem.model,
+      code: cmn.Code.createEmpty(),
+      classFullName: ClassificationSystem.classFullName,
+      //category: existingSystem.cate
+      userLabel: repoSystem.name,
+      edition: repoSystem.editionVersion,
+      location: repoSystem.source
+    };
+
+    const id = this.imodel.elements.insertElement(props);
+    const newSystem: ClassificationSystem = this.imodel.elements.getElement(id);
+    return newSystem.id;
+
+  }
 }
+

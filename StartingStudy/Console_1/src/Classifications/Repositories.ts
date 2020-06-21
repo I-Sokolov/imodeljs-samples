@@ -54,7 +54,7 @@ export class Repositories {
   }
 
   /** */
-  private FindRoot (systemName: string | undefined, tableName: string | undefined): rp.System | rp.Item | undefined {
+  private FindRoot (systemName: string | undefined, tableName: string | undefined): rp.System | rp.Table | undefined {
     
     let system: rp.System  | undefined;
     
@@ -62,7 +62,7 @@ export class Repositories {
       system = this.FindSystem (systemName);
     }
 
-    let table: rp.Item | undefined;
+    let table: rp.Table | undefined;
     if (tableName) {
       if (system) {
         table = system.FindTable(tableName);
@@ -94,7 +94,7 @@ export class Repositories {
   }
 
   /**  */
-  private FindTableInAllSystems(name: string): rp.Item | undefined {
+  private FindTableInAllSystems(name: string): rp.Table | undefined {
 
     //search table
     for (const repo of this.repositories) {

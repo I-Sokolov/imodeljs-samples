@@ -120,7 +120,7 @@ export class System {
 
     this.tables = new Array<Table>();
 
-    if (this.name && this.name.toLowerCase().startsWith("omni")) {
+    if (this.UseTables ()) {
       if (xmlNode.Items)
         for (const xmlItems of xmlNode.Items) {
           if (xmlItems.Item)
@@ -137,22 +137,29 @@ export class System {
   }
 
   /** */
+  private UseTables(): boolean {
+    if (this.name && this.name.toLowerCase().startsWith("omni"))
+      return true;
+    return false;
+  }
+
+  /** */
   public FindItem(itemCode: string): Item | undefined {
 
-    for (const item of this.tables) {
-      const found = item.FindItem(itemCode);
+    for (const table of this.tables) {
+      const found = table.FindItem(itemCode);
       if (found) {
         return found;
       }
     }
-      
-    return undefined;
+
+  return undefined;
   }
 
   /** */
   public FindTable(tableName: string): Table | undefined {
     for (const item of this.tables) {
-      if (item.ID == tableName) {
+      if (item.id == tableName) {
         return item;
       }
     }
@@ -171,15 +178,12 @@ export class Item {
   public description: string | undefined;
 
   /** */
-  public parent: Item | System;
+  public parent: Item | Table;
   public children: Array<Item>;
 
-  public get ID(): string | undefined {
-    return this.id;
-  }
 
   /** */
-  constructor(theApp: TheApp, parent: Item | System, xmlNode: any) {
+  constructor(theApp: TheApp, parent: Item|Table, xmlNode: any) {
     this.theApp = theApp;
 
     this.parent = parent;
@@ -204,7 +208,7 @@ export class Item {
   /** */
   public FindItem(itemCode: string): Item | undefined {
 
-    if (this.ID == itemCode) {
+    if (this.id == itemCode) {
       return this;
     }
 
@@ -220,13 +224,46 @@ export class Item {
 
 }
 
-export class Table extends Item {
+export class Table {
+
+/** */
+  private theApp: TheApp;
+
+  /** */
+  public id: string | undefined;
+  public name: string | undefined;
+  public description: string | undefined;
+
+  /** */
+  public system: System;
+  public children: Array<Item>;
+
+
 /** */
   constructor(theApp: TheApp, system: System, xmlNode: any) {
-    super(theApp, system, xmlNode);
+    this.theApp = theApp;
+
+    this.system = system;
+
+    if (xmlNode.ID)
+      for (this.id of xmlNode.ID);
+    if (xmlNode.Name)
+      for (this.name of xmlNode.Name);
+    if (xmlNode.Description)
+      for (this.description of xmlNode.Description);
 
     if (!this.id)
       this.id = this.name;
+    
+    this.children = new Array<Item>();
+
+    if (xmlNode.Children)
+      for (const xmlChild of xmlNode.Children)
+        if (xmlChild.Item)
+          for (const xmlItem of xmlChild.Item) {
+            const item = new Item(theApp, this, xmlItem);
+            this.children.push(item);
+          }
 
     if (xmlNode.Items)
       for (const xmlItems of xmlNode.Items) {
@@ -235,7 +272,19 @@ export class Table extends Item {
             const item = new Item(theApp, this, xmlItem);
             this.children.push(item);
           }
+      }    
+  }
+
+  /** */
+  public FindItem(itemCode: string): Item | undefined {
+
+    for (const item of this.children) {
+      const found = item.FindItem(itemCode);
+      if (found) {
+        return found;
       }
-    
+    }
+
+    return undefined;
   }
 }

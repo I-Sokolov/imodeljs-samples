@@ -120,7 +120,7 @@ export class Classifications {
 
     /**  */
     private UpdateClassification(idClsf: core.Id64String, item: Item) {
-        const updater = new Updater(this.theApp, this.imodel, idClsf, item);
-        updater.Execute();
+        const updater = new Updater(this.theApp, this.imodel);
+        updater.Update(idClsf, item);
     }
 }
