@@ -89,7 +89,7 @@ export class System {
   public source: string | undefined;
 
   /** */
-  public items: Array<Item>;
+  public tables: Array<Table>;
 
   /** */
   constructor(theApp: TheApp, xmlNode: any) {
@@ -118,21 +118,28 @@ export class System {
     if (xmlNode.Source)
       for (this.source of xmlNode.Source);
 
-    this.items = new Array<Item>();
-    if (xmlNode.Items)
-      for (const xmlItems of xmlNode.Items) {
-        if (xmlItems.Item)
-          for (const xmlItem of xmlItems.Item) {
-            const item = new Item(theApp, this, xmlItem);
-            this.items.push(item);
-          }
-      }
+    this.tables = new Array<Table>();
+
+    if (this.name && this.name.toLowerCase().startsWith("omni")) {
+      if (xmlNode.Items)
+        for (const xmlItems of xmlNode.Items) {
+          if (xmlItems.Item)
+            for (const xmlItem of xmlItems.Item) {
+              const table = new Table(theApp, this, xmlItem);
+              this.tables.push(table);
+            }
+        }
+    }
+    else {
+      const table = new Table(theApp, this, xmlNode);
+      this.tables.push(table);
+    }
   }
 
   /** */
   public FindItem(itemCode: string): Item | undefined {
 
-    for (const item of this.items) {
+    for (const item of this.tables) {
       const found = item.FindItem(itemCode);
       if (found) {
         return found;
@@ -143,17 +150,13 @@ export class System {
   }
 
   /** */
-  public FindTable(tableName: string): Item | undefined {
-
-    if (this.name && this.name.startsWith("omni")) {
-      for (const item of this.items) {
-        if (item.ID == tableName) {
-          return item;
-        }
+  public FindTable(tableName: string): Table | undefined {
+    for (const item of this.tables) {
+      if (item.ID == tableName) {
+        return item;
       }
     }
-
-    return undefined;  
+    return undefined;
   }
 }
 
@@ -215,4 +218,24 @@ export class Item {
     return undefined;
   }
 
+}
+
+export class Table extends Item {
+/** */
+  constructor(theApp: TheApp, system: System, xmlNode: any) {
+    super(theApp, system, xmlNode);
+
+    if (!this.id)
+      this.id = this.name;
+
+    if (xmlNode.Items)
+      for (const xmlItems of xmlNode.Items) {
+        if (xmlItems.Item)
+          for (const xmlItem of xmlItems.Item) {
+            const item = new Item(theApp, this, xmlItem);
+            this.children.push(item);
+          }
+      }
+    
+  }
 }

@@ -13,6 +13,7 @@ import * as cmn from "@bentley/imodeljs-common"
 import { TheApp } from "./TheApp"
 import { Repositories } from "./Repositories";
 import { Item } from "./Repository";
+import { Updater } from "./Updater";
 
 /** Helper class to work with classification systems
  * @public
@@ -119,6 +120,7 @@ export class Classifications {
 
     /**  */
     private UpdateClassification(idClsf: core.Id64String, item: Item) {
-        core.Logger.logTrace(this.theApp.loggerCategory, `Updating ${item.ID} on EC ${idClsf}`);
+        const updater = new Updater(this.theApp, this.imodel, idClsf, item);
+        updater.Execute();
     }
 }

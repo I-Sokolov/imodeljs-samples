@@ -36,8 +36,8 @@ import * as Graphisoft from "./Classifications/GetGraphisoftRepositories";
       version = '10';
 
       //Download model
-      let downloader = new Downloader ();
-      await downloader.Download('o:\\DevArea\\BridgeIFC\\out\\test.bim', projId, modelId, version);
+ //     let downloader = new Downloader ();
+   //   await downloader.Download('o:\\DevArea\\BridgeIFC\\out\\test.bim', projId, modelId, version);
 
 /*
       const modify = new Modify ();
@@ -49,7 +49,7 @@ import * as Graphisoft from "./Classifications/GetGraphisoftRepositories";
 */
       
       //LocalBim.CreateNew ("o:\\DevArea\\BridgeIfc\\out\\A.bim", "o:\\DevArea\\BridgeIfc\\out\\test.bim");
-      //LocalBim.TestClassifications();
+      LocalBim.TestClassifications();
 
       //const donwloader = new Graphisoft.Download();
       //await donwloader.Run();
