@@ -10,9 +10,13 @@ import * as core from "@bentley/bentleyjs-core";
 import * as bk from "@bentley/imodeljs-backend";
 import * as cmn from "@bentley/imodeljs-common"
 
+import {Classification} from "./ec2ts/ClassificationSystemsElements"
+import { ClassificationProps} from "./ec2ts/ClassificationSystemsElementProps"
+
 import { TheApp } from "./TheApp"
 import { Repositories } from "./Repositories";
 import { Item } from "./Repository";
+import { EcefLocationProps } from "@bentley/imodeljs-common";
 
 /** Update classification
  * @public
@@ -40,7 +44,9 @@ export class Updater {
   public Execute() {
     core.Logger.logTrace(this.theApp.loggerCategory, `Updating ${this.item.ID} on EC ${this.idClsf}`);
   
-    //this.imodel.elements
+    const elem: Classification = this.imodel.elements.getElement(this.idClsf);
+
+    core.Logger.logTrace(this.theApp.loggerCategory, `${elem.userLabel} and ${elem.description}`);
   }
-  
+
 }

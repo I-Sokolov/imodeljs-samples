@@ -18,6 +18,7 @@
     "@bentley/backend-itwin-client": "^2.0.0",
     "@bentley/bentleyjs-core": "*",
     "@bentley/ecschema-metadata": "*",
+    "@bentley/ecschema2ts": "^2.2.0",
     "@bentley/frontend-authorization-client": "*",
     "@bentley/geometry-core": "*",
     "@bentley/imodelhub-client": "*",
