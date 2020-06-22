@@ -37,6 +37,9 @@ function MakeQuery (imodel: bk.IModelDb, query:string) {
                 const str = n.id;
                 print += str + "\t";
                 break;
+              case cmn.ECSqlValueType.Id:
+                print += val.getId() + "\t";
+                break;
               default:
                 //console.log(type);
                 print += val.getString() + "\t";

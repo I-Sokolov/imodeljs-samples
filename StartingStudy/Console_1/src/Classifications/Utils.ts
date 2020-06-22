@@ -10,7 +10,7 @@ import * as cmn from "@bentley/imodeljs-common"
 /** Internal utilities
 * @private
 */
-export class TheApp {
+export class Utils {
   /**  */
   public loggerCategory: string = "Classification Systems Utility";
 
@@ -60,12 +60,16 @@ export class TheApp {
               case cmn.ECSqlValueType.Navigation:
                 const n = val.getNavigation();
                 const str = n.id;
-                print += str + "\t";
+                print += str;
+                break;
+              case cmn.ECSqlValueType.Id:
+                print += val.getId();
                 break;
               default:
                 //console.log(type);
-                print += val.getString() + "\t";
+                print += val.getString();
             }
+            print += "\t";
           }
         }
         this.Trace(print);

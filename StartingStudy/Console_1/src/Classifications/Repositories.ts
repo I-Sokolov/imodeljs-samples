@@ -6,7 +6,7 @@
 import * as fs from "fs"
 import * as path from "path"
 
-import { TheApp } from "./TheApp"
+import { Utils } from "./Utils"
 import * as rp from "./Repository";
 
 /** Access to classification repositories
@@ -16,7 +16,7 @@ import * as rp from "./Repository";
 export class Repositories {
   
   /** */
-  private theApp: TheApp;
+  private theApp: Utils;
 
   /** */
   private repositories: Array<rp.Repository>;
@@ -25,7 +25,7 @@ export class Repositories {
    * constructor.
    * @param imode The impdel to work with.
    */
-  public constructor(theApp: TheApp) {
+  public constructor(theApp: Utils) {
     this.theApp = theApp;
     this.repositories = new Array<rp.Repository>();
     this.ReadRepositories();

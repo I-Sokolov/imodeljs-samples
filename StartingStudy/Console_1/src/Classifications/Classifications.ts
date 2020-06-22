@@ -10,7 +10,7 @@ import * as core from "@bentley/bentleyjs-core";
 import * as bk from "@bentley/imodeljs-backend";
 import * as cmn from "@bentley/imodeljs-common"
 
-import { TheApp } from "./TheApp"
+import { Utils } from "./Utils"
 import { Repositories } from "./Repositories";
 import { Item } from "./Repository";
 import { Updater } from "./Updater";
@@ -21,7 +21,7 @@ import { Updater } from "./Updater";
 export class Classifications {
 
     /** */
-    private theApp: TheApp;
+    private theApp: Utils;
 
     /** */
     private repositories: Repositories;
@@ -34,7 +34,7 @@ export class Classifications {
      * @param imode The impdel to work with.
      */
     public constructor(imodel: bk.IModelDb, loggerCategory?: string) {
-        this.theApp = new TheApp(loggerCategory);
+        this.theApp = new Utils(loggerCategory);
         this.imodel = imodel;
         this.repositories = new Repositories(this.theApp);
         this.theApp.Trace("ClassificationSystems constructed");

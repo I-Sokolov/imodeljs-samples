@@ -14,7 +14,7 @@ import { Classification, ClassificationTable, ClassificationSystem} from "./ec2t
 import { ClassificationProps, ClassificationTableProps, ClassificationSystemProps } from "./ec2ts/ClassificationSystemsElementProps"
 import { ClassificationSystems} from "./ec2ts/ClassificationSystems"
 
-import { TheApp } from "./TheApp"
+import { Utils } from "./Utils"
 import { Repositories } from "./Repositories";
 import { Item, Table, System } from "./Repository";
 import { EcefLocationProps } from "@bentley/imodeljs-common";
@@ -25,14 +25,14 @@ import { EcefLocationProps } from "@bentley/imodeljs-common";
 export class Updater {
 
   /**  */
-  private theApp: TheApp;
+  private theApp: Utils;
   private imodel: bk.IModelDb;
 
   /**
    * constructor.
    * @param imode The impdel to work with.
    */
-  public constructor(theApp: TheApp, imodel: bk.IModelDb) {
+  public constructor(theApp: Utils, imodel: bk.IModelDb) {
     this.theApp = theApp;
     this.imodel = imodel;
   }
@@ -76,7 +76,7 @@ export class Updater {
 
       const newParent = this.UpdateItemRecursive(existingParent, existingModel, repoParent);
 
-      return this.UpdateItemDirect(existingItem, repoParent, newParent.model, newParent)
+      return this.UpdateItemDirect(existingItem, repoItem, newParent.model, newParent)
     }
   }
 
@@ -102,12 +102,20 @@ export class Updater {
   /** */
   private UpdateItemDirect(existingItem: Classification | undefined, repoItem: Item, newModel: core.Id64String, parent?: Classification): Classification {
     
-    const description = this.GetECDescription (repoItem);
+    const description = this.GetECDescription(repoItem);
+
+    let relParent: cmn.RelatedElement | undefined = undefined;
+    if (parent) {
+      relParent = {
+        id: parent.id,
+        relClassName: "ClassificationSystems.ClassificationOwnsSubClassifications"
+      };
+    }
 
     if (existingItem && existingItem.model == newModel) {
       existingItem.userLabel = repoItem.id;
       existingItem.description = description;
-      existingItem.parent = parent;
+      existingItem.parent = relParent;
       existingItem.update();
       return existingItem;
     }
@@ -116,7 +124,7 @@ export class Updater {
       model: newModel,
       code: cmn.Code.createEmpty(),
       classFullName: ClassificationSystems.schemaName + ":" + Classification.className,
-      //category: cat,
+      parent: relParent,
       userLabel: repoItem.id,
       description: description
     };
@@ -125,10 +133,40 @@ export class Updater {
 
     const newItem: Classification = this.imodel.elements.getElement(id);
 
-    //TODO move relationships and delete old item
+    if (existingItem) {
+      this.GrabClassified(existingItem, newItem);
+      existingItem.delete();
+    }
 
     return newItem;
   }    
+
+  /** */
+  private GrabClassified(existingItem: Classification, newItem: Classification) {
+
+    const relClassFullName = "ClassificationSystems:ElementHasClassifications";
+
+    //const queryAll = `SELECT * FROM ${relClassFullName}`;
+    //this.theApp.LogQueryResult(this.imodel, queryAll);
+
+    const query = `SELECT SourceECInstanceId FROM ${relClassFullName} WHERE TargetECInstanceId=${existingItem.id}`;
+
+    const stmt: bk.ECSqlStatement = this.imodel.prepareStatement(query);
+
+    while (stmt.step() === cmn.DbResult.BE_SQLITE_ROW) {
+      const sqlVal = stmt.getValue(0);
+      const idElem = sqlVal.getId();
+
+      const props: bk.RelationshipProps = {
+        classFullName: relClassFullName,
+        sourceId: idElem,
+        targetId: newItem.id,
+      };
+
+      const rel = this.imodel.relationships.createInstance(props);
+      core.Logger.logTrace(this.theApp.loggerCategory, `Classify ${idElem} as ${newItem.id} by rel ${rel.id}`);
+    }      
+  }  
 
   /** */
   private UpdateTable(existingTableModelId: core.Id64String, repoTable: Table): core.Id64String {

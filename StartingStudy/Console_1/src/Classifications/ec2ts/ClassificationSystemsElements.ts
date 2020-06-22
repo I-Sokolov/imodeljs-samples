@@ -57,4 +57,3 @@ export class ClassificationTable extends DefinitionElement implements Classifica
 
   description?: string;
 }
-

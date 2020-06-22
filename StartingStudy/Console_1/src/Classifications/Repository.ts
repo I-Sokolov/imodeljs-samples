@@ -8,7 +8,7 @@ import * as xml from "xml2js"
 
 import { Logger } from "@bentley/bentleyjs-core";
 
-import { TheApp } from "./TheApp"
+import { Utils } from "./Utils"
 
 
 /** Classification repository
@@ -22,7 +22,7 @@ export class Repository {
   public systems: Array<System>;
 
   /** */
-  private theApp: TheApp;
+  private theApp: Utils;
 
   /** */
   private filePath: string;
@@ -32,7 +32,7 @@ export class Repository {
    * constructor.
    * @param imode The impdel to work with.
    */
-  public constructor(theApp: TheApp, filePath: string) {
+  public constructor(theApp: Utils, filePath: string) {
     this.theApp = theApp;
     this.filePath = filePath;
     this.parsed = false;
@@ -79,7 +79,7 @@ export class Repository {
 /** Classification system in repository */
 export class System {
   /** */
-  private theApp: TheApp;
+  private theApp: Utils;
 
   /** */
   public name: string | undefined;
@@ -92,7 +92,7 @@ export class System {
   public tables: Array<Table>;
 
   /** */
-  constructor(theApp: TheApp, xmlNode: any) {
+  constructor(theApp: Utils, xmlNode: any) {
     this.theApp = theApp;
 
     if (xmlNode.Name)
@@ -170,7 +170,7 @@ export class System {
 /** Access to classification system in repository */
 export class Item {
   /** */
-  private theApp: TheApp;
+  private theApp: Utils;
 
   /** */
   public id: string | undefined;
@@ -183,7 +183,7 @@ export class Item {
 
 
   /** */
-  constructor(theApp: TheApp, parent: Item|Table, xmlNode: any) {
+  constructor(theApp: Utils, parent: Item|Table, xmlNode: any) {
     this.theApp = theApp;
 
     this.parent = parent;
@@ -227,7 +227,7 @@ export class Item {
 export class Table {
 
 /** */
-  private theApp: TheApp;
+  private theApp: Utils;
 
   /** */
   public id: string | undefined;
@@ -240,7 +240,7 @@ export class Table {
 
 
 /** */
-  constructor(theApp: TheApp, system: System, xmlNode: any) {
+  constructor(theApp: Utils, system: System, xmlNode: any) {
     this.theApp = theApp;
 
     this.system = system;
