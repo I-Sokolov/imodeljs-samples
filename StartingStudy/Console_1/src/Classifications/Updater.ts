@@ -15,9 +15,7 @@ import { ClassificationProps, ClassificationTableProps, ClassificationSystemProp
 import { ClassificationSystems} from "./ec2ts/ClassificationSystems"
 
 import { Utils } from "./Utils"
-import { Repositories } from "./Repositories";
 import { Item, Table, System } from "./Repository";
-import { EcefLocationProps } from "@bentley/imodeljs-common";
 
 /** Update classification
  * @public
@@ -25,7 +23,7 @@ import { EcefLocationProps } from "@bentley/imodeljs-common";
 export class Updater {
 
   /**  */
-  private theApp: Utils;
+  private utils: Utils;
   private imodel: bk.IModelDb;
 
   /**
@@ -33,13 +31,13 @@ export class Updater {
    * @param imode The impdel to work with.
    */
   public constructor(theApp: Utils, imodel: bk.IModelDb) {
-    this.theApp = theApp;
+    this.utils = theApp;
     this.imodel = imodel;
   }
 
   /** */
   public Update(idClsf: core.Id64String, repoItem: Item) {
-    core.Logger.logTrace(this.theApp.loggerCategory, `Updating ${repoItem.id} on EC ${idClsf}`);
+    core.Logger.logTrace(this.utils.loggerCategory, `Updating ${repoItem.id} on EC ${idClsf}`);
   
     try {
       const existingItem: Classification = this.imodel.elements.getElement(idClsf);
@@ -47,7 +45,7 @@ export class Updater {
       this.UpdateItemRecursive(existingItem, existingItem.model, repoItem);
     }
     catch (err) {
-      core.Logger.logError(this.theApp.loggerCategory, `Failed to update classificatoin ${idClsf} ${repoItem.id}: ` + err);
+      core.Logger.logError(this.utils.loggerCategory, `Failed to update classificatoin ${idClsf} ${repoItem.id}: ` + err);
     }
   }
 
@@ -104,10 +102,10 @@ export class Updater {
 
     let query = "";
     if (parentId) {
-      query = `SELECT ECInstanceId FROM ${ClassificationSystems.schemaName}:${Classification.className} WHERE UserLabel='${repoItem.id}' AND parent.id=${parentId} AND model.id=${modelId} ORDER BY ECInstanceId LIMIT 1`;
+      query = `SELECT ECInstanceId FROM ${Classification.classFullName} WHERE UserLabel='${repoItem.id}' AND parent.id=${parentId} AND model.id=${modelId} ORDER BY ECInstanceId LIMIT 1`;
     }
     else {
-      query = `SELECT ECInstanceId FROM ${ClassificationSystems.schemaName}:${Classification.className} WHERE UserLabel='${repoItem.id}' AND parent is Null AND model.id=${modelId} ORDER BY ECInstanceId LIMIT 1`;
+      query = `SELECT ECInstanceId FROM ${Classification.classFullName} WHERE UserLabel='${repoItem.id}' AND parent is Null AND model.id=${modelId} ORDER BY ECInstanceId LIMIT 1`;
     }
 
     const stmt: bk.ECSqlStatement = this.imodel.prepareStatement(query);
@@ -156,7 +154,7 @@ export class Updater {
     const props: ClassificationProps = {
       model: newModel,
       code: cmn.Code.createEmpty(),
-      classFullName: ClassificationSystems.schemaName + ":" + Classification.className,
+      classFullName: Classification.classFullName,
       parent: relParent,
       userLabel: repoItem.id,
       description: this.GetECDescription(repoItem)
@@ -197,14 +195,14 @@ export class Updater {
       };
 
       const rel = this.imodel.relationships.createInstance(props);
-      core.Logger.logTrace(this.theApp.loggerCategory, `Classify ${idElem} as ${newItem.id} by rel ${rel.id}`);
+      core.Logger.logTrace(this.utils.loggerCategory, `Classify ${idElem} as ${newItem.id} by rel ${rel.id}`);
     }      
   }  
 
   /** */
   private UpdateExistingTable(repoTable: Table, systemId: core.Id64String): ClassificationTable | undefined {
 
-    const query = `SELECT ECInstanceId FROM ${ClassificationSystems.schemaName}:${ClassificationTable.className} WHERE UserLabel='${repoTable.id}' AND parent.id=${systemId} ORDER BY ECInstanceId LIMIT 1`;
+    const query = `SELECT ECInstanceId FROM ${ClassificationTable.classFullName} WHERE UserLabel='${repoTable.id}' AND parent.id=${systemId} ORDER BY ECInstanceId LIMIT 1`;
 
     const stmt: bk.ECSqlStatement = this.imodel.prepareStatement(query);
 
@@ -256,7 +254,7 @@ export class Updater {
     const props: ClassificationTableProps = {
       model: existingTableElem.model,
       code: cmn.Code.createEmpty(),
-      classFullName: ClassificationSystems.schemaName + ":" + ClassificationTable.className,
+      classFullName: ClassificationTable.classFullName,
       parent: parentSystem,
       userLabel: repoTable.id,
       description: this.GetECDescription(repoTable)
@@ -283,7 +281,7 @@ export class Updater {
   /** */
   private UpdateExistingSystem(repoSystem: System): ClassificationSystem|undefined {
 
-    const query = `SELECT ECInstanceId FROM ${ClassificationSystems.schemaName}:${ClassificationSystem.className} WHERE UserLabel='${repoSystem.name}' ORDER BY ECInstanceId LIMIT 1`;
+    const query = `SELECT ECInstanceId FROM ${ClassificationSystem.classFullName} WHERE UserLabel='${repoSystem.name}' ORDER BY ECInstanceId LIMIT 1`;
 
     const stmt: bk.ECSqlStatement = this.imodel.prepareStatement(query);
 
@@ -328,7 +326,7 @@ export class Updater {
     const props : ClassificationSystemProps = {
       model: existingSystem.model,
       code: cmn.Code.createEmpty(),
-      classFullName: ClassificationSystems.schemaName + ":" + ClassificationSystem.className,
+      classFullName: ClassificationSystem.classFullName,
       //category: existingSystem.cate
       userLabel: repoSystem.name,
       edition: repoSystem.editionVersion,

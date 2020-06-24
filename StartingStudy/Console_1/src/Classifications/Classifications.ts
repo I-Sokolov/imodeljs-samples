@@ -14,6 +14,7 @@ import { Utils } from "./Utils"
 import { Repositories } from "./Repositories";
 import { Item } from "./Repository";
 import { Updater } from "./Updater";
+import { Cleaner } from "./Cleaner";
 
 /** Helper class to work with classification systems
  * @public
@@ -21,7 +22,7 @@ import { Updater } from "./Updater";
 export class Classifications {
 
     /** */
-    private theApp: Utils;
+    private utils: Utils;
 
     /** */
     private repositories: Repositories;
@@ -34,30 +35,30 @@ export class Classifications {
      * @param imode The impdel to work with.
      */
     public constructor(imodel: bk.IModelDb, loggerCategory?: string) {
-        this.theApp = new Utils(loggerCategory);
+        this.utils = new Utils(loggerCategory);
         this.imodel = imodel;
-        this.repositories = new Repositories(this.theApp);
-        this.theApp.Trace("ClassificationSystems constructed");
+        this.repositories = new Repositories(this.utils);
+        this.utils.Trace("ClassificationSystems constructed");
     }
 
     /** Print info and statistics about classification systems to log */
     public LogInfo() {
         try {
-            const saveLevel = core.Logger.getLevel(this.theApp.loggerCategory);
-            core.Logger.setLevel(this.theApp.loggerCategory, core.LogLevel.Trace);
+            const saveLevel = core.Logger.getLevel(this.utils.loggerCategory);
+            core.Logger.setLevel(this.utils.loggerCategory, core.LogLevel.Trace);
         
-            this.theApp.Trace(`ClassificationSystems information for ${this.imodel.name}`);
+            this.utils.Trace(`ClassificationSystems information for ${this.imodel.name}`);
 
-            this.theApp.Trace("EC Schema");
-            this.theApp.LogQueryResult(this.imodel, "SELECT Name, Alias, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef WHERE Alias='clsf'");
+            this.utils.Trace("EC Schema");
+            this.utils.LogQueryResult(this.imodel, "SELECT Name, Alias, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef WHERE Alias='clsf'");
 
-            this.theApp.Trace("Classifications");
-            this.theApp.LogQueryResult(this.imodel, "SELECT ECInstanceId clsfId, Model.id modelId, UserLabel FROM clsf.Classification");
+            this.utils.Trace("Classifications");
+            this.utils.LogQueryResult(this.imodel, "SELECT ECInstanceId clsfId, Model.id modelId, UserLabel FROM clsf.Classification");
 
-            core.Logger.setLevel(this.theApp.loggerCategory, (saveLevel == undefined) ? core.LogLevel.None : saveLevel!);
+            core.Logger.setLevel(this.utils.loggerCategory, (saveLevel == undefined) ? core.LogLevel.None : saveLevel!);
         }
         catch (err) {
-            core.Logger.logError(this.theApp.loggerCategory, err);
+            core.Logger.logError(this.utils.loggerCategory, err);
         }
     }
 
@@ -78,17 +79,22 @@ export class Classifications {
                 this.FindAndUpdateClassification(clsfId, modelId, code);
             }
 
-            //TODO: delete empty tables and systems
+            this.imodel.saveChanges("Classification tree is populated");
+
+            const cleaner = new Cleaner(this.utils, this.imodel);
+            cleaner.CleanAll();
+
+            this.imodel.saveChanges("Removed unused classifications");
         }
         catch (err) {
-            core.Logger.logError(this.theApp.loggerCategory, err);
+            core.Logger.logError(this.utils.loggerCategory, err);
         }
     }
 
     /**  */
     private FindAndUpdateClassification(idClsf: core.Id64String, idModel: core.Id64String | null, code: string) {
         try {
-            this.theApp.Trace(`Updating ${code} ${idClsf} ${idModel}`);
+            this.utils.Trace(`Updating ${code} ${idClsf} ${idModel}`);
 
             let table: bk.Element | undefined = undefined;
             let system: bk.Element | undefined = undefined;
@@ -112,17 +118,17 @@ export class Classifications {
                 this.UpdateClassification(idClsf, item);
             }
             else {
-                core.Logger.logWarning(this.theApp.loggerCategory, `Classification item not found: ${code}, system ${systemName}, ${tableName}`);
+                core.Logger.logWarning(this.utils.loggerCategory, `Classification item not found: ${code}, system ${systemName}, ${tableName}`);
             }
         }
         catch (err) {
-            core.Logger.logError(this.theApp.loggerCategory, `Failed to update classificatoin ${idClsf} ${code}: ` + err);
+            core.Logger.logError(this.utils.loggerCategory, `Failed to update classificatoin ${idClsf} ${code}: ` + err);
         }    
     }
 
     /**  */
     private UpdateClassification(idClsf: core.Id64String, item: Item) {
-        const updater = new Updater(this.theApp, this.imodel);
+        const updater = new Updater(this.utils, this.imodel);
         updater.Update(idClsf, item);
     }
 }
