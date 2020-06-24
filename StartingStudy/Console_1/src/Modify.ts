@@ -6,6 +6,7 @@ import * as itwcli from "@bentley/itwin-client"
 
 import { Config } from "./Config";
 import { PrintModelInfo } from "./ModelInfo";
+import { Classifications } from "./Classifications/Classifications"
 
 export class Modify {
 
@@ -19,6 +20,16 @@ export class Modify {
     private get imodeldb () : bk.IModelDb { return this._imodeldb!}
 
     constructor (){
+    }
+
+    async UpdateClassifications(projId: string, modelId: string) {
+        await this.OpenBriefcase(projId, modelId);
+
+        const clsf = new Classifications(this.imodeldb, Config.loggingCategory);
+        clsf.UpdateAll();        
+
+        await this.PushBriefcase("Classification Systems Updated");
+        await this.CloseBriefcase();        
     }
 
     async OpenBriefcase (projId : string, modelId : string) {

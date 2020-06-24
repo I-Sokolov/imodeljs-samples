@@ -24,32 +24,33 @@ import * as Graphisoft from "./Classifications/GetGraphisoftRepositories";
       await list.Print ();
 */
       let projId = '15e988af-57c2-44f8-a9fb-c1ad46c878f1'; //IfcBridge
-      let modelId = '545b48ad-4a62-42a8-bc00-306910977a60'
+      let modelId = '7fce5737-be45-4e03-af9d-6b9a4556fe49'
       if (!Config.UseQAEnv) {
         projId = '39598190-6072-408b-a1e0-95a8cee4f761';
         modelId = '5c9875e4-4ac4-430c-bbb7-2bf4697701fc';
       }
       let version: string | undefined = undefined;
 
-      projId = 'e962117f-dec2-4559-877a-410bcc962688'; //IfcBridgePipeline_smoke
-      modelId = '28934e29-fabc-49e5-a416-2428d8ebaa45'
-      version = '10';
+      //projId = 'e962117f-dec2-4559-877a-410bcc962688'; //IfcBridgePipeline_smoke
+      //modelId = '28934e29-fabc-49e5-a416-2428d8ebaa45'
+      //version = '10';
 
       //Download model
  //     let downloader = new Downloader ();
    //   await downloader.Download('o:\\DevArea\\BridgeIFC\\out\\test.bim', projId, modelId, version);
 
-/*
+
       const modify = new Modify ();
-      await modify.OpenBriefcase (projId, modelId);
+/*      await modify.OpenBriefcase (projId, modelId);
       //await modify.DeleteAllGeometric ();
       await modify.CreateCircles ();
       await modify.PushBriefcase ("changhes");
       await modify.CloseBriefcase ();
 */
+      await modify.UpdateClassifications(projId, modelId);
       
       //LocalBim.CreateNew ("o:\\DevArea\\BridgeIfc\\out\\A.bim", "o:\\DevArea\\BridgeIfc\\out\\test.bim");
-      LocalBim.TestClassifications();
+      //LocalBim.TestClassifications();
 
       //const donwloader = new Graphisoft.Download();
       //await donwloader.Run();
