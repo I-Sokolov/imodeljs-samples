@@ -77,6 +77,8 @@ export class Classifications {
 
                 this.FindAndUpdateClassification(clsfId, modelId, code);
             }
+
+            //TODO: delete empty tables and systems
         }
         catch (err) {
             core.Logger.logError(this.theApp.loggerCategory, err);

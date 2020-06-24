@@ -80,7 +80,7 @@ export class Updater {
     }
   }
 
-/** */
+  /** */
   private GetECDescription(repoItem: Item | Table): string | undefined {
     
     let description = undefined;
@@ -100,9 +100,50 @@ export class Updater {
   }
 
   /** */
+  private UpdateExistingItem(repoItem: Item, modelId: core.Id64String, parentId: core.Id64String|null): Classification | undefined {
+
+    let query = "";
+    if (parentId) {
+      query = `SELECT ECInstanceId FROM ${ClassificationSystems.schemaName}:${Classification.className} WHERE UserLabel='${repoItem.id}' AND parent.id=${parentId} AND model.id=${modelId} ORDER BY ECInstanceId LIMIT 1`;
+    }
+    else {
+      query = `SELECT ECInstanceId FROM ${ClassificationSystems.schemaName}:${Classification.className} WHERE UserLabel='${repoItem.id}' AND parent is Null AND model.id=${modelId} ORDER BY ECInstanceId LIMIT 1`;
+    }
+
+    const stmt: bk.ECSqlStatement = this.imodel.prepareStatement(query);
+
+    while (stmt.step() === cmn.DbResult.BE_SQLITE_ROW) {
+      const sqlVal = stmt.getValue(0);
+      const existingItemId = sqlVal.getId();
+
+      const existingItem: ClassificationTable = this.imodel.elements.getElement(existingItemId);
+
+      let update = false;
+
+      const description = this.GetECDescription(repoItem);
+
+      if (existingItem.description != description) {
+        existingItem.description = description;
+        update = true;
+      }
+
+      if (update) {
+        existingItem.update();
+      }
+
+      return existingItem;
+    }
+
+    return undefined;
+  }
+
+  /** */
   private UpdateItemDirect(existingItem: Classification | undefined, repoItem: Item, newModel: core.Id64String, parent?: Classification): Classification {
     
-    const description = this.GetECDescription(repoItem);
+    const found = this.UpdateExistingItem(repoItem, newModel, parent ? parent.id : null);
+    if (found) {
+      return found;
+    }
 
     let relParent: cmn.RelatedElement | undefined = undefined;
     if (parent) {
@@ -112,28 +153,20 @@ export class Updater {
       };
     }
 
-    if (existingItem && existingItem.model == newModel) {
-      existingItem.userLabel = repoItem.id;
-      existingItem.description = description;
-      existingItem.parent = relParent;
-      existingItem.update();
-      return existingItem;
-    }
-
     const props: ClassificationProps = {
       model: newModel,
       code: cmn.Code.createEmpty(),
       classFullName: ClassificationSystems.schemaName + ":" + Classification.className,
       parent: relParent,
       userLabel: repoItem.id,
-      description: description
+      description: this.GetECDescription(repoItem)
     };
 
     const id = this.imodel.elements.insertElement(props);
 
     const newItem: Classification = this.imodel.elements.getElement(id);
 
-    if (existingItem) {
+    if (existingItem && existingItem.id != newItem.id) {
       this.GrabClassified(existingItem, newItem);
       existingItem.delete();
     }
@@ -169,6 +202,38 @@ export class Updater {
   }  
 
   /** */
+  private UpdateExistingTable(repoTable: Table, systemId: core.Id64String): ClassificationTable | undefined {
+
+    const query = `SELECT ECInstanceId FROM ${ClassificationSystems.schemaName}:${ClassificationTable.className} WHERE UserLabel='${repoTable.id}' AND parent.id=${systemId} ORDER BY ECInstanceId LIMIT 1`;
+
+    const stmt: bk.ECSqlStatement = this.imodel.prepareStatement(query);
+
+    while (stmt.step() === cmn.DbResult.BE_SQLITE_ROW) {
+      const sqlVal = stmt.getValue(0);
+      const existingTableId = sqlVal.getId();
+
+      const existingTableElem: ClassificationTable = this.imodel.elements.getElement(existingTableId);
+      
+      let update = false;
+
+      const description = this.GetECDescription(repoTable);
+
+      if (existingTableElem.description != description) {
+        existingTableElem.description = description;
+        update = true;
+      }
+      
+      if (update) {
+        existingTableElem.update();
+      }
+
+      return existingTableElem;
+    }
+
+    return undefined;
+  }
+
+  /** */
   private UpdateTable(existingTableModelId: core.Id64String, repoTable: Table): core.Id64String {
 
     const existingTableModel = this.imodel.models.getModel(existingTableModelId);
@@ -178,12 +243,9 @@ export class Updater {
     const existingSystemId = existingTableElem.parent!.id;
     const newSystemId = this.UpdateSystem(existingSystemId, repoTable.system);
 
-    const description = this.GetECDescription(repoTable);
-
-    if (newSystemId == existingSystemId && existingTableElem.userLabel == repoTable.id) {
-      existingTableElem.description = description;
-      existingTableElem.update();
-      return existingTableModelId;
+    const foundExisting = this.UpdateExistingTable(repoTable, newSystemId);
+    if (foundExisting) {
+      return foundExisting.id;
     }
 
     const parentSystem : cmn.RelatedElementProps = {
@@ -197,7 +259,7 @@ export class Updater {
       classFullName: ClassificationSystems.schemaName + ":" + ClassificationTable.className,
       parent: parentSystem,
       userLabel: repoTable.id,
-      description: description
+      description: this.GetECDescription(repoTable)
     };
 
     const idNewTable = this.imodel.elements.insertElement(props);
@@ -219,16 +281,49 @@ export class Updater {
   }
 
   /** */
+  private UpdateExistingSystem(repoSystem: System): ClassificationSystem|undefined {
+
+    const query = `SELECT ECInstanceId FROM ${ClassificationSystems.schemaName}:${ClassificationSystem.className} WHERE UserLabel='${repoSystem.name}' ORDER BY ECInstanceId LIMIT 1`;
+
+    const stmt: bk.ECSqlStatement = this.imodel.prepareStatement(query);
+
+    while (stmt.step() === cmn.DbResult.BE_SQLITE_ROW) {
+      const sqlVal = stmt.getValue(0);
+      const existingSystemId = sqlVal.getId();
+
+      const existingSystem: ClassificationSystem = this.imodel.elements.getElement(existingSystemId);
+
+      let update = false;
+
+      if (existingSystem.edition != repoSystem.editionVersion) {
+        existingSystem.edition = repoSystem.editionVersion;
+        update = true;
+      }
+
+      if (existingSystem.location != repoSystem.source) {
+        existingSystem.location = repoSystem.source;
+        update = true;
+      }
+
+      if (update) {
+        existingSystem.update();
+      }
+      
+      return existingSystem;
+    }
+
+    return undefined
+  }
+
+  /** */
   private UpdateSystem(existingSystemId: core.Id64String, repoSystem: System) : core.Id64String {
     
-    const existingSystem: ClassificationSystem = this.imodel.elements.getElement(existingSystemId);
-
-    if (existingSystem.userLabel == repoSystem.name) {
-      existingSystem.edition = repoSystem.editionVersion;
-      existingSystem.location = repoSystem.source;
-      existingSystem.update();
-      return existingSystem.id;
+    const foundSystem = this.UpdateExistingSystem(repoSystem);
+    if (foundSystem) {
+      return foundSystem.id;
     }
+
+    const existingSystem: ClassificationSystem = this.imodel.elements.getElement(existingSystemId);
 
     const props : ClassificationSystemProps = {
       model: existingSystem.model,

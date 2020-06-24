@@ -53,6 +53,7 @@ export class LocalBim {
     public static TestClassifications () {
         try {
             const srcModelFile = 'O:\\DevArea\\BridgeIFC\\out\\Winx64\\Product\\IfcBridgeSmokeTest\\run\\Output\\Mapping.bim';
+            //const srcModelFile = 'O:\\DevArea\\BridgeIFC\\out\\UnspecClassif.bim';
             const srcModel = bk.SnapshotDb.openFile(srcModelFile);       
             
             const dstModelFile = 'o:\\DevArea\\BridgeIFC\\out\\clsf.bim';
