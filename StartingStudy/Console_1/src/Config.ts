@@ -3,9 +3,9 @@ import * as path from "path";
 
 import { IModelHost, IModelHostConfiguration, IModelDb } from "@bentley/imodeljs-backend";
 import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, ConnectClient, HubIModel, IModelHubClient, Project } from "@bentley/imodeljs-clients";
+import * as iModelClient from "@bentley/imodeljs-clients";
 import { OidcAgentClient, OidcAgentClientConfiguration } from "@bentley/imodeljs-clients-backend";
-import * as itwcli from "@bentley/itwin-client"
+import * as iTwinClient from "@bentley/itwin-client"
 import * as bkitwcli from "@bentley/backend-itwin-client";
 
 export class Config {
@@ -54,6 +54,8 @@ export class Config {
       return {
         clientId: process.env.iModeljsAgentId_QA!,
         clientSecret: process.env.iModeljsAgentSecret_QA!,
+        imsLogin: "igor.sokolov@bentley.com",
+        imsPassword: process.env.ImsPassword_QA!,
         scope: "urlps-third-party context-registry-service:read-only imodelhub",
       }
     }   
@@ -61,35 +63,82 @@ export class Config {
       return {
         clientId: process.env.iModeljsAgentId!,
         clientSecret: process.env.iModeljsAgentSecret!,
+        imsLogin: "igor.sokolov@bentley.com",
+        imsPassword: process.env.ImsPassword_QA!,
         scope: "urlps-third-party context-registry-service:read-only imodelhub",
       }
     }
   };
 
-  public static async login() : Promise<AuthorizedClientRequestContext> {
+  public static async login() : Promise<iModelClient.AuthorizedClientRequestContext> {
   
     Logger.logTrace(Config.loggingCategory, `Attempting to login to OIDC for ${Config.clientConfig.clientId}`);
     
     const client = new OidcAgentClient(Config.clientConfig);
     const actx = new ClientRequestContext("");
-    const accessToken: AccessToken = await client.getToken(actx);
+    const accessToken: iModelClient.AccessToken = await client.getToken(actx);
     Logger.logTrace(Config.loggingCategory, `Successful login`);
 
-    let authCtx = new AuthorizedClientRequestContext(accessToken!);
+    let authCtx = new iModelClient.AuthorizedClientRequestContext(accessToken!);
 
     return authCtx;
   }
 
-  public static async loginITwin () : Promise<itwcli.AuthorizedClientRequestContext> {
+  public static async loginITwin () : Promise<iTwinClient.AuthorizedClientRequestContext> {
   
     Logger.logTrace(Config.loggingCategory, `Attempting to login to iTwin for ${Config.clientConfig.clientId}`);
     
     const client = new bkitwcli.AgentAuthorizationClient (Config.clientConfig);
-    const accessToken: itwcli.AccessToken = await client.getAccessToken ();
+    const accessToken: iTwinClient.AccessToken = await client.getAccessToken ();
     Logger.logTrace(Config.loggingCategory, `Successful login iTwing`);
 
-    let authCtx = new itwcli.AuthorizedClientRequestContext(accessToken!);
+    let authCtx = new iTwinClient.AuthorizedClientRequestContext(accessToken!);
 
     return authCtx;
   }
+
+  public static async loginByEmail(): Promise<iTwinClient.AuthorizedClientRequestContext> {
+
+    Logger.logTrace(Config.loggingCategory, `Attempting to login to iTwin for ${Config.clientConfig.imsLogin}`);
+    
+    const iModelClient_authToken: iModelClient.AuthorizationToken = await new iModelClient.ImsActiveSecureTokenClient().getToken(
+      new ClientRequestContext(),
+      { email: Config.clientConfig.imsLogin, password: Config.clientConfig.imsPassword }
+    );
+
+    if (!iModelClient_authToken) {
+      throw new Error("iModelClient.ImsActiveSecureTokenClient().getToken failed");
+    }
+          
+    const iModelClient_accessToken: iModelClient.AccessToken = await new iModelClient.ImsDelegationSecureTokenClient().getToken(
+      new ClientRequestContext(),
+      iModelClient_authToken!
+    );
+
+    if (!iModelClient_authToken) {
+      throw new Error("iModelClient.ImsDelegationSecureTokenClient().getToken failed");      
+    }
+
+    //return new iModelClient.AuthorizedClientRequestContext(accessToken);
+
+    const tokenString = iModelClient_accessToken.toTokenString();
+
+    const iTwinClient_accessToken: iTwinClient.AccessToken = iTwinClient.AccessToken.fromTokenString(tokenString);
+
+    if (!iTwinClient_accessToken) {
+      throw new Error("iTwinClient.AccessToken.fromTokenString failed");
+    }
+    
+    let authCtx = new iTwinClient.AuthorizedClientRequestContext(iTwinClient_accessToken);
+
+    if (!authCtx) {
+      throw new Error("new iTwinClient.AuthorizedClientRequestContext failed");
+    }
+
+    Logger.logTrace(Config.loggingCategory, `Successful login`);
+
+    return authCtx;
+    
+  }
+
 }
